@@ -1,31 +1,45 @@
 #! /bin/bash
+
+# set_up_OpenStreetMap.sh
+# Authors: Daming Li 	 (Massey ID: 15398736, Email: ldm2264@gmail.com, @Damming github.com)
+#          Moravy Oum	 (Massey ID: , Email: , @ github.com)
+#          Yaozu zhang	 (Massey ID: , Email: , @ github.com)
+#          Simon Freeman (Massey ID: , Email: , @ github.com)
+
+# Update Ubuntu & Install essential tools
 sudo apt-get update
 sudo apt-get -y upgrade
 sudo apt-get -y install ca-certificates curl unzip gdal-bin tar wget bzip2 build-essential clang
 
+# Configure a swap (500M)
 sudo fallocate -l 500M /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
 
+# Set the en_GB locale
 sudo locale-gen en_GB en_GB.UTF-8
 sudo update-locale LANG='en_GB.UTF-8'
 sudo update-locale LANGUAGE='en_GB.UTF-8'
 sudo update-locale LC_ALL='en_GB.UTF-8'
 . /etc/default/locale
 
+# Install Git
 sudo apt-get install -y git
 
 sudo add-apt-repository -y ppa:no1wantdthisname/ppa
 sudo apt-get update 
 sudo apt-get install -y libfreetype6 libfreetype6-dev
 
+# Install Mapnik from the standard Ubuntu repository
 sudo apt-get install -y git autoconf libtool libxml2-dev libbz2-dev \
   libgeos-dev libgeos++-dev libproj-dev gdal-bin libgdal-dev g++ \
   libmapnik-dev mapnik-utils python-mapnik
 
-  sudo apt-get install -y apache2 apache2-dev
+# Install Apache HTTP Server
+sudo apt-get install -y apache2 apache2-dev
 
+# Install Mod_tile from source
 sudo apt-get install -y autoconf autogen
 mkdir -p ~/src
 cd ~/src
@@ -34,15 +48,19 @@ cd mod_tile
 ./autogen.sh && ./configure && make && sudo make install && sudo make install-mod_tile && sudo ldconfig
 cd ~/
 
+# Install Yaml and Package Manager for Python
 sudo apt-get install -y python-yaml
 sudo apt-get install -y python-pip
 
+# Install Mapnik Utilities
 sudo apt-get install -y mapnik-utils
 
+# Install openstreetmap-carto
 cd ~/src
 git clone https://github.com/gravitystorm/openstreetmap-carto.git
 cd openstreetmap-carto
 
+# Install the fonts needed by openstreetmap-carto
 sudo apt-get install -y fonts-noto-cjk fonts-noto-hinted fonts-noto-unhinted fonts-hanazono ttf-unifont
 cd ~/src
 git clone https://github.com/googlei18n/noto-emoji.git
@@ -69,6 +87,7 @@ sudo apt install fontconfig
 fc-list
 fc-list | grep Emoji
 
+# Install old unifont Medium font (just removes the warning)
 cd ~/src
 mkdir OldUnifont
 cd OldUnifont
