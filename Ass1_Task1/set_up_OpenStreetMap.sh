@@ -1,10 +1,20 @@
 #! /bin/bash
 
 # set_up_OpenStreetMap.sh
+#
 # Authors: Daming Li 	 (Massey ID: 15398736, Email: ldm2264@gmail.com, @Damming github.com)
 #          Moravy Oum	 (Massey ID: , Email: , @ github.com)
 #          Yaozu zhang	 (Massey ID: , Email: , @ github.com)
 #          Simon Freeman (Massey ID: , Email: , @ github.com)
+#
+# Create time: 01/Aug./2018
+#
+# License: 
+#
+# Description: Install all required libraries and turn a blanck Ubuntu Server to an OpenStreetMap Server
+# 
+# System required: Ubuntu Server 16.04
+
 
 # Update Ubuntu & Install essential tools
 sudo apt-get update
