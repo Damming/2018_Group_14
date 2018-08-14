@@ -1,10 +1,10 @@
-# create_instance.yml
+# prepared_new_instance.yml
 #
-# Author: Daming Li 09/Aug./2018
+# Author: Daming Li 14/Aug./2018
 #
-# A draft of creating an AWS EC2 Instance using existed key pair
+# Description: Create an AWS key pair and an AWS EC2 Instance using that key pair
 #
-# Run: ansible-playbook -i ./hosts create_instance.yml
+# Run: ansible-playbook -i ./hosts prepared_new_instance.yml
 
 ---
   - name: Provision an EC2 Instance
@@ -23,6 +23,17 @@
 
     # Task that will be used to Launch/Create an EC2 Instance
     tasks:
+
+      - name: Create a new EC2 key
+        ec2_key:
+          name: keypairForAnsible
+          region: us-east-2
+        register: ec2_key_result
+
+      - name: Save private key
+        copy: content="{{ ec2_key_result.key.private_key }}" dest="~/.ssh/keypairForAnsible.yem" mode=0600
+        when: ec2_key_result.changed
+
       - name: Create a security group
         local_action: 
           module: ec2_group
