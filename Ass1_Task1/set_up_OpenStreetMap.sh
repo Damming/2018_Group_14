@@ -4,7 +4,7 @@
 #
 # Authors: Daming Li 	 (Massey ID: 15398736, Email: ldm2264@gmail.com, @Damming github.com)
 #          Moravy Oum	 (Massey ID: , Email: , @ github.com)
-#          Yaozu zhang	 (Massey ID: , Email: , @ github.com)
+#          Yaozu zhang	 (Massey ID: 15398302, Email: 1264453650@qq.com, @shadoade github.com)
 #          Simon Freeman (Massey ID: , Email: , @ github.com)
 #
 # Create time: 01/Aug./2018
