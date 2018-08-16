@@ -106,3 +106,34 @@ tar xvfz unifont_5.1.20080914.orig.tar.gz unifont-5.1.20080914/font/precompiled/
 sudo cp unifont-5.1.20080914/font/precompiled/unifont.ttf /usr/share/fonts/truetype/unifont/OldUnifont.ttf
 sudo fc-cache -fv
 fc-list | grep -i unifont # both uppercase and lowercase fonts will be listed
+
+#Create the data folder
+cd ~/src
+cd openstreetmap-carto
+scripts/get-shapefiles.py
+
+# installing Node.js v6.x
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && sudo apt-get install -y nodejs
+
+#install the latest version 0 of carto
+sudo npm install -g carto@0
+
+#install mapnik-reference
+npm install mapnik-reference
+
+#Set the environment variables
+export PGHOST=localhost
+export PGPORT=5432
+export PGUSER=postgres
+export PGPASSWORD=postgres_007%
+
+#Install PostgreSQL
+sudo apt-get update
+sudo apt-get install -y postgresql postgis pgadmin3 postgresql-contrib
+
+# Set the password for the postgres user
+echo 'localhost:5432:*:postgres:postgres_007%'>.pgpass
+chmod 600 .pgpass
+sudo sed -i 's|peer|trust|' /etc/postgresql/9.5/main/pg_hba.conf
+sudo sed -i 's|md5|trust|' /etc/postgresql/9.5/main/pg_hba.conf
+sudo service postgresql restart
