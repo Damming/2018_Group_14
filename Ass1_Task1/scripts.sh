@@ -199,7 +199,7 @@ sudo systemctl daemon-reload
 sudo systemctl start renderd
 sudo systemctl enable renderd
 
-echo 'LoadModule tile_module /usr/lib/apache2/mod_tile.so' | sudo /etc/apache2/mods-available/mod_tile.load
+echo 'LoadModule tile_module /usr/lib/apache2/mod_tile.so' | sudo tee -a /etc/apache2/mods-available/mod_tile.load
 
 sudo sed –i '4i\        LoadTileConfigFile /etc/renderd.conf\\' /etc/apache2/sites-enabled/000-default.conf
 sudo sed –i '5i\        ModTileRenderdSocketName /var/run/renderd/renderd.sock\' /etc/apache2/sites-enabled/000-default.conf
