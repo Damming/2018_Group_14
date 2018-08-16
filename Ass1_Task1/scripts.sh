@@ -145,14 +145,15 @@ HOSTNAME=localhost # set it to the actual ip address or host name
 psql -U postgres -h $HOSTNAME -c "CREATE DATABASE gis ENCODING 'UTF-8' LC_COLLATE 'en_GB.utf8' LC_CTYPE 
 'en_GB.utf8' TEMPLATE template0"
 
-export PGPASSWORD=postgres_007%
-HOSTNAME=localhost
-psql -U postgres -h $HOSTNAME -c "CREATE DATABASE gis ENCODING 'UTF-8' LC_COLLATE 'en_GB.utf8' LC_CTYPE 
-'en_GB.utf8' TEMPLATE template0"
+sudo sed -i '10i\ host all all 0.0.0.0/0 md5\' /etc/postgresql/9.5/main/pg_hba.conf
+sudo /etc/init.d/postgresql restart
+
+psql -U postgres -h $HOSTNAME -c "\connect gis"
+psql -U postgres -h $HOSTNAME -d gis -c "CREATE EXTENSION postgis"
+psql -U postgres -h $HOSTNAME -d gis -c "CREATE EXTENSION hstore"
+
 
 psql -U postgres -c "create user tileserver;grant all privileges on database gis to tileserver;" 
-tileserver
-^c
 
 echo shared_buffers = 128MB >> /etc/postgresql/9.5/main/postgresql.conf
 echo min_wal_size = 80MB >> /etc/postgresql/9.5/main/postgresql.conf
