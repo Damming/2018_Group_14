@@ -145,6 +145,7 @@ HOSTNAME=localhost # set it to the actual ip address or host name
 psql -U postgres -h $HOSTNAME -c "CREATE DATABASE gis ENCODING 'UTF-8' LC_COLLATE 'en_GB.utf8' LC_CTYPE 
 'en_GB.utf8' TEMPLATE template0"
 
+
 sudo sed -i '10i\ host all all 0.0.0.0/0 md5\' /etc/postgresql/9.5/main/pg_hba.conf
 sudo /etc/init.d/postgresql restart
 
@@ -190,7 +191,7 @@ sudo sed -i -e '/HOST=/ s~=.*~= localhost~' /usr/local/etc/renderd.conf
 
 sudo cp ~/src/mod_tile/debian/renderd.init /etc/init.d/renderd
 sudo chmod a+x /etc/init.d/renderd
-sudo vi /etc/init.d/renderd
+
 
 sudo sed -i -e 'DAEMON=/ s~=.*~= /usr/local/bin/$NAME~' /etc/init.d/renderd
 sudo sed -i -e '/DAEMON_ARGS=/ s~=.*~= "-c /etc/renderd.conf"~' /etc/init.d/renderd
@@ -199,17 +200,17 @@ sudo sed -i -e '/RUNASUSER=/ s~=.*~=ubuntu~' /etc/init.d/renderd
 sudo systemctl daemon-reload
 sudo systemctl start renderd
 sudo systemctl enable renderd
+#edit
+echo 'LoadModule tile_module /usr/lib/apache2/mod_tile.so' | sudo /etc/apache2/mods-available/mod_tile.load
+sudo ln -s /etc/apache2/mods-available/mod_tile /etc/apache2/mods-enable
 
-echo 'LoadModule tile_module /usr/lib/apache2/mod_tile.so' | sudo tee -a /etc/apache2/mods-available/mod_tile.load
-
-sudo sed –i '4i\        LoadTileConfigFile /etc/renderd.conf\\' /etc/apache2/sites-enabled/000-default.conf
-sudo sed –i '5i\        ModTileRenderdSocketName /var/run/renderd/renderd.sock\' /etc/apache2/sites-enabled/000-default.conf
-sudo sed –i '6i\        ModTileRequestTimeout 3\' /etc/apache2/sites-enabled/000-default.conf
+sudo sed –i '4i\        LoadTileConfigFile /etc/renderd.conf\' /etc/apache2/sites-enabled/000-default.conf
+sudo sed –i '5i\        ModTileRenderdSocketName /var/run/renderd/renderd.sock\' /etc/apache2/sites-enabled/000-default.conf 
+sudo sed –i '6i\        ModTileRequestTimeout 3\' /etc/apache2/sites-enabled/000-default.conf 
 sudo sed –i '7i\        ModTileMissingRequestTimeout 60\' /etc/apache2/sites-enabled/000-default.conf
-sudo sed –i '8i\        ServerAdmin webmaster@localhost\' /etc/apache2/sites-enabled/000-default.conf
-sudo sed –i '9i\        DocumentRoot /var/www/html\' /etc/apache2/sites-enabled/000-default.conf
+sudo sed –i '8i\        ServerAdmin webmaster@localhost\' /etc/apache2/sites-enabled/000-default.conf 
+sudo sed –i '9i\        DocumentRoot /var/www/html\' /etc/apache2/sites-enabled/000-default.conf 
 sudo sed –i '10i\       ErrorLog ${APACHE_LOG_DIR}/error.log \' /etc/apache2/sites-enabled/000-default.conf
-sudo sed –i '11i\       CustomLog ${APACHE_LOG_DIR}/access.log combined \' /etc/apache2/sites-enabled/000-default.conf
+sudo sed –i '11i\       CustomLog ${APACHE_LOG_DIR}/access.log combined \' /etc/apache2/sites-enabled/000-default.conf 
 sudo systemctl restart apache2
-
 
