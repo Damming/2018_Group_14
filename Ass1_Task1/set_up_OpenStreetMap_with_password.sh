@@ -15,6 +15,8 @@
 # Description: Install all required libraries and turn a blanck Ubuntu Server to an OpenStreetMap Server
 # 
 # System required: Ubuntu Server 18.04
+#
+# Parameter required: Password
 
 
 
@@ -149,7 +151,7 @@ ls -l style.xml
 export PGHOST=localhost
 export PGPORT=5432
 export PGUSER=postgres
-export PGPASSWORD=postgres_007%
+export PGPASSWORD=$1
 
 #Install PostgreSQL
 sudo apt-get update
@@ -157,14 +159,14 @@ sudo apt-get install -y postgresql postgis pgadmin3 postgresql-contrib
 
 # Set the password for the postgres user
 cd ~/
-echo 'localhost:5432:*:postgres:postgres_007%'>.pgpass
+echo "localhost:5432:*:postgres:$1">.pgpass
 chmod 600 .pgpass
 sudo sed -i 's|peer|trust|' /etc/postgresql/10/main/pg_hba.conf
 sudo sed -i 's|md5|trust|' /etc/postgresql/10/main/pg_hba.conf
 sudo service postgresql restart
 
 #Create the PostGIS Instance
-export PGPASSWORD=postgres_007%
+export PGPASSWORD=$1
 HOSTNAME=localhost
 psql -U postgres -h $HOSTNAME -c "CREATE DATABASE gis ENCODING 'UTF-8' LC_COLLATE 'en_GB.utf8' LC_CTYPE 'en_GB.utf8' TEMPLATE template0"
 
