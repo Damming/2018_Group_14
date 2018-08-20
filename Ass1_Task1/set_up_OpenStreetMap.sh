@@ -3,8 +3,8 @@
 # set_up_OpenStreetMap.sh
 #
 # Authors: Daming Li 	 (Massey ID: 15398736, Email: ldm2264@gmail.com, @Damming github.com)
-#          Moravy Oum	 (Massey ID: , Email: , @ github.com)
-#          Yaozu zhang	 (Massey ID: , Email: , @ github.com)
+#          Moravy Oum	 (Massey ID: 16859528 , Email: moravy22@gmail.com , @Moravy github.com)
+#          Yaozu zhang	 (Massey ID: 15398302, Email: 1264453650@qq.com, @shadoade github.com)
 #          Simon Freeman (Massey ID: , Email: , @ github.com)
 #
 # Create time: 01/Aug./2018
@@ -13,12 +13,12 @@
 #
 # Description: Install all required libraries and turn a blanck Ubuntu Server to an OpenStreetMap Server
 # 
-# System required: Ubuntu Server 16.04
+# System required: Ubuntu Server 18.04
 
 
 # Update Ubuntu & Install essential tools
 sudo apt-get update
-sudo apt-get -y upgrade
+# sudo apt-get -y upgrade
 sudo apt-get -y install ca-certificates curl unzip gdal-bin tar wget bzip2 build-essential clang
 
 # Configure a swap (500M)
@@ -43,8 +43,8 @@ sudo apt-get update
 sudo apt-get install -y libfreetype6 libfreetype6-dev
 
 # Install Mapnik from the standard Ubuntu repository
-sudo add-apt-repository -y ppa:talaj/osm-mapnik
-sudo apt-get update
+# sudo add-apt-repository -y ppa:talaj/osm-mapnik
+# sudo apt-get update
 sudo apt-get install -y git autoconf libtool libxml2-dev libbz2-dev \
   libgeos-dev libgeos++-dev libproj-dev gdal-bin libgdal-dev g++ \
   libmapnik-dev mapnik-utils python-mapnik
@@ -53,21 +53,21 @@ sudo apt-get install -y git autoconf libtool libxml2-dev libbz2-dev \
 sudo apt-get install -y apache2 apache2-dev
 
 # Install Mod_tile from package
-sudo apt-get install -y libapache2-mod-tile
+# sudo apt-get install -y libapache2-mod-tile
 
 # Install Mod_tile from source
-# sudo apt-get install -y autoconf autogen libmapnik3.0
-# mkdir -p ~/src
-# cd ~/src
-# git clone https://github.com/openstreetmap/mod_tile.git
-# cd mod_tile
-# ./autogen.sh
-# ./configure
-# make -i
-# sudo make install -i
-# sudo make install-mod_tile -i
-# sudo ldconfig
-# cd ~/
+sudo apt-get install -y autoconf autogen libmapnik3.0
+mkdir -p ~/src
+cd ~/src
+git clone https://github.com/openstreetmap/mod_tile.git
+cd mod_tile
+./autogen.sh
+./configure
+make
+sudo make install
+sudo make install-mod_tile
+sudo ldconfig
+cd ~/
 
 # Install Yaml and Package Manager for Python
 sudo apt-get install -y python-yaml
@@ -125,6 +125,7 @@ scripts/get-shapefiles.py
 
 # installing Node.js v6.x
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && sudo apt-get install -y nodejs
+sudo apt-get install -y npm
 
 #install the latest version 0 of carto
 sudo npm install -g carto@0
@@ -153,8 +154,8 @@ sudo apt-get install -y postgresql postgis pgadmin3 postgresql-contrib
 cd ~/
 echo 'localhost:5432:*:postgres:postgres_007%'>.pgpass
 chmod 600 .pgpass
-sudo sed -i 's|peer|trust|' /etc/postgresql/9.5/main/pg_hba.conf
-sudo sed -i 's|md5|trust|' /etc/postgresql/9.5/main/pg_hba.conf
+sudo sed -i 's|peer|trust|' /etc/postgresql/10/main/pg_hba.conf
+sudo sed -i 's|md5|trust|' /etc/postgresql/10/main/pg_hba.conf
 sudo service postgresql restart
 
 #Create the PostGIS Instance
@@ -171,18 +172,18 @@ psql -U postgres -h $HOSTNAME -d gis -c "CREATE EXTENSION hstore"
 psql -U postgres -c "create user ubuntu;grant all privileges on database gis to ubuntu;"
 
 # Enabling remote access to PostgreSQL
-sudo sed -i "10i\host all all 0.0.0.0/0 trust" /etc/postgresql/9.5/main/pg_hba.conf
-sudo sed -i "58i\listen_addresses = '*'" /etc/postgresql/9.5/main/postgresql.conf
+sudo sed -i "10i\host all all 0.0.0.0/0 trust" /etc/postgresql/10/main/pg_hba.conf
+sudo sed -i "58i\listen_addresses = '*'" /etc/postgresql/10/main/postgresql.conf
 sudo /etc/init.d/postgresql restart
 
 # Tuning the database
-sudo echo 'shared_buffers = 128MB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
-sudo echo 'min_wal_size = 80MB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
-sudo echo 'max_wal_size = 1GB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
-sudo echo 'work_mem = 4MB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
-sudo echo 'maintenance_work_mem= 64MB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
-sudo echo 'autovacuum = off' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
-sudo echo 'fsync = off' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
+sudo echo 'shared_buffers = 128MB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+sudo echo 'min_wal_size = 80MB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+sudo echo 'max_wal_size = 1GB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+sudo echo 'work_mem = 4MB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+sudo echo 'maintenance_work_mem= 64MB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+sudo echo 'autovacuum = off' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+sudo echo 'fsync = off' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
 sudo /etc/init.d/postgresql stop
 sudo /etc/init.d/postgresql start
 
@@ -211,16 +212,15 @@ chmod a+x ./install-postgis-osm-user.sh
 sudo ./install-postgis-osm-user.sh gis ubuntu
 
 # Configure renderd
-sudo sed -i -e '/plugins_dir/ s~=.*~= /usr/lib/mapnik/3.0/input~' /usr/local/etc/renderd.conf
-sudo sed -i -e '/font_dir=/ s~=.*~= /usr/share/fonts~' /usr/local/etc/renderd.conf
-sudo sed -i -e '/font_dir_recurse=/ s~=.*~= true~' /usr/local/etc/renderd.conf
-sudo sed -i -e '/URI=/ s~=.*~= /osm_tiles/~' /usr/local/etc/renderd.conf
-sudo sed -i -e '/XML=/ s~=.*~= /home/ubuntu/src/openstreetmap-carto/style.xml~' /usr/local/etc/renderd.conf
-sudo sed -i -e '/HOST=/ s~=.*~= localhost~' /usr/local/etc/renderd.conf
-sudo sed -i '30i\TILEDIR=/var/lib/mod_tile' /usr/local/etc/renderd.conf
-sudo sed -i '31i\TILESIZE=256' /usr/local/etc/renderd.conf
-# sudo echo 'TILEDIR=/var/lib/mod_tile' | sudo tee -a /usr/local/etc/renderd.conf
-# sudo echo 'TILESIZE=256' | sudo tee -a /usr/local/etc/renderd.conf
+sudo sed -i "2i\socketname=/var/run/renderd/renderd.sock" /usr/local/etc/renderd.conf
+sudo sed -i -e '/plugins_dir/ s~=.*~=/usr/lib/mapnik/3.0/input~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/font_dir=/ s~=.*~=/usr/share/fonts~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/font_dir_recurse=/ s~=.*~=true~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/URI=/ s~=.*~=/osm_tiles/~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/XML=/ s~=.*~=/home/ubuntu/src/openstreetmap-carto/style.xml~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/HOST=/ s~=.*~=localhost~' /usr/local/etc/renderd.conf
+# sudo sed -i '30i\TILEDIR=/var/lib/mod_tile' /usr/local/etc/renderd.conf
+# sudo sed -i '31i\TILESIZE=256' /usr/local/etc/renderd.conf
 
 # Install renderd init script by copying the sample init script included in its package
 sudo cp ~/src/mod_tile/debian/renderd.init /etc/init.d/renderd
@@ -231,8 +231,8 @@ sudo sed -i -e '/DAEMON=/ s~=.*~= /usr/local/bin/$NAME~' /etc/init.d/renderd
 sudo sed -i -e '/DAEMON_ARGS=/ s~=.*~= "-c /usr/local/etc/renderd.conf"~' /etc/init.d/renderd
 sudo sed -i -e '/RUNASUSER=/ s~=.*~=ubuntu~' /etc/init.d/renderd
 
-# sudo mkdir /var/run/renderd
-# sudo chown ubuntu /var/run/renderd
+sudo mkdir /var/run/renderd
+sudo chown ubuntu:ubuntu /var/run/renderd
 
 sudo mkdir -p /var/lib/mod_tile
 sudo chown ubuntu:ubuntu /var/lib/mod_tile
@@ -251,3 +251,14 @@ sudo sed -i '3i\        ModTileRenderdSocketName /var/run/renderd/renderd.sock' 
 sudo sed -i '4i\        ModTileRequestTimeout 3' /etc/apache2/sites-enabled/000-default.conf
 sudo sed -i '5i\        ModTileMissingRequestTimeout 60' /etc/apache2/sites-enabled/000-default.conf
 sudo systemctl restart apache2
+
+# OpenLayers
+cd /var/www/html/
+sudo wget -c https://raw.githubusercontent.com/Damming/MapData/master/ol.html
+
+# Leaflet
+sudo wget -c https://raw.githubusercontent.com/Damming/MapData/master/lf.html
+
+# Start renderd
+cd ~
+renderd -f -c /usr/local/etc/renderd.conf
