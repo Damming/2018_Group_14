@@ -37,11 +37,14 @@ sudo update-locale LC_ALL='en_GB.UTF-8'
 # Install Git
 sudo apt-get install -y git
 
+# Update Freetype6
 sudo add-apt-repository -y ppa:no1wantdthisname/ppa
 sudo apt-get update 
 sudo apt-get install -y libfreetype6 libfreetype6-dev
 
 # Install Mapnik from the standard Ubuntu repository
+sudo add-apt-repository -y ppa:talaj/osm-mapnik
+sudo apt-get update
 sudo apt-get install -y git autoconf libtool libxml2-dev libbz2-dev \
   libgeos-dev libgeos++-dev libproj-dev gdal-bin libgdal-dev g++ \
   libmapnik-dev mapnik-utils python-mapnik
@@ -49,14 +52,22 @@ sudo apt-get install -y git autoconf libtool libxml2-dev libbz2-dev \
 # Install Apache HTTP Server
 sudo apt-get install -y apache2 apache2-dev
 
+# Install Mod_tile from package
+sudo apt-get install -y libapache2-mod-tile
+
 # Install Mod_tile from source
-sudo apt-get install -y autoconf autogen
-mkdir -p ~/src
-cd ~/src
-git clone https://github.com/openstreetmap/mod_tile.git
-cd mod_tile
-./autogen.sh && ./configure && make && sudo make install && sudo make install-mod_tile && sudo ldconfig
-cd ~/
+# sudo apt-get install -y autoconf autogen libmapnik3.0
+# mkdir -p ~/src
+# cd ~/src
+# git clone https://github.com/openstreetmap/mod_tile.git
+# cd mod_tile
+# ./autogen.sh
+# ./configure
+# make -i
+# sudo make install -i
+# sudo make install-mod_tile -i
+# sudo ldconfig
+# cd ~/
 
 # Install Yaml and Package Manager for Python
 sudo apt-get install -y python-yaml
@@ -105,7 +116,7 @@ wget http://http.debian.net/debian/pool/main/u/unifont/unifont_5.1.20080914.orig
 tar xvfz unifont_5.1.20080914.orig.tar.gz unifont-5.1.20080914/font/precompiled/unifont.ttf
 sudo cp unifont-5.1.20080914/font/precompiled/unifont.ttf /usr/share/fonts/truetype/unifont/OldUnifont.ttf
 sudo fc-cache -fv
-fc-list | grep -i unifont # both uppercase and lowercase fonts will be listed
+fc-list | grep -i unifont
 
 #Create the data folder
 cd ~/src
@@ -120,6 +131,13 @@ sudo npm install -g carto@0
 
 #install mapnik-reference
 npm install mapnik-reference
+node -e "console.log(require('mapnik-reference'))"
+
+# Test carto and produce style.xml from the openstreetmap-carto style
+cd ~/src
+cd openstreetmap-carto
+carto -a "3.0.20" project.mml > style.xml
+ls -l style.xml
 
 #Set the environment variables
 export PGHOST=localhost
@@ -132,8 +150,104 @@ sudo apt-get update
 sudo apt-get install -y postgresql postgis pgadmin3 postgresql-contrib
 
 # Set the password for the postgres user
+cd ~/
 echo 'localhost:5432:*:postgres:postgres_007%'>.pgpass
 chmod 600 .pgpass
 sudo sed -i 's|peer|trust|' /etc/postgresql/9.5/main/pg_hba.conf
 sudo sed -i 's|md5|trust|' /etc/postgresql/9.5/main/pg_hba.conf
 sudo service postgresql restart
+
+#Create the PostGIS Instance
+export PGPASSWORD=postgres_007%
+HOSTNAME=localhost
+psql -U postgres -h $HOSTNAME -c "CREATE DATABASE gis ENCODING 'UTF-8' LC_COLLATE 'en_GB.utf8' LC_CTYPE 'en_GB.utf8' TEMPLATE template0"
+
+# Create the postgis and hstore extensions
+psql -U postgres -h $HOSTNAME -c "\connect gis"
+psql -U postgres -h $HOSTNAME -d gis -c "CREATE EXTENSION postgis"
+psql -U postgres -h $HOSTNAME -d gis -c "CREATE EXTENSION hstore"
+
+# Add a user and grant access to gis DB
+psql -U postgres -c "create user ubuntu;grant all privileges on database gis to ubuntu;"
+
+# Enabling remote access to PostgreSQL
+sudo sed -i "10i\host all all 0.0.0.0/0 trust" /etc/postgresql/9.5/main/pg_hba.conf
+sudo sed -i "58i\listen_addresses = '*'" /etc/postgresql/9.5/main/postgresql.conf
+sudo /etc/init.d/postgresql restart
+
+# Tuning the database
+sudo echo 'shared_buffers = 128MB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
+sudo echo 'min_wal_size = 80MB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
+sudo echo 'max_wal_size = 1GB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
+sudo echo 'work_mem = 4MB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
+sudo echo 'maintenance_work_mem= 64MB' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
+sudo echo 'autovacuum = off' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
+sudo echo 'fsync = off' | sudo tee -a /etc/postgresql/9.5/main/postgresql.conf
+sudo /etc/init.d/postgresql stop
+sudo /etc/init.d/postgresql start
+
+# Install Osm2pgsql
+# sudo apt-get install -y osm2pgsql
+sudo add-apt-repository -y ppa:osmadmins/ppa
+apt-key adv --keyserver keyserver.ubuntu.com --recv A438A16C88C6BE41CB1616B8D57F48750AC4F2CB
+sudo apt-get update
+sudo apt-get install -y osm2pgsql
+
+# Get an OpenStreetMap data extract
+cd ~/src/openstreetmap-carto
+# wget -c https://download.bbbike.org/osm/bbbike/Auckland/Auckland.osm.pbf
+wget -c https://raw.githubusercontent.com/Damming/MapData/master/Auckland.osm.pbf
+
+# Load data to PostGIS
+sudo sysctl -w vm.overcommit_memory=1
+HOSTNAME=localhost
+osm2pgsql -s -C 300 -c -G --hstore --style openstreetmap-carto.style --tag-transform-script openstreetmap-carto.lua -d gis -H $HOSTNAME -U postgres Auckland.osm.pbf
+
+# Create indexes and grant users
+HOSTNAME=localhost
+scripts/indexes.py | psql -U postgres -h $HOSTNAME -d gis
+wget https://raw.githubusercontent.com/openstreetmap/osm2pgsql/master/install-postgis-osm-user.sh
+chmod a+x ./install-postgis-osm-user.sh
+sudo ./install-postgis-osm-user.sh gis ubuntu
+
+# Configure renderd
+sudo sed -i -e '/plugins_dir/ s~=.*~= /usr/lib/mapnik/3.0/input~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/font_dir=/ s~=.*~= /usr/share/fonts~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/font_dir_recurse=/ s~=.*~= true~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/URI=/ s~=.*~= /osm_tiles/~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/XML=/ s~=.*~= /home/ubuntu/src/openstreetmap-carto/style.xml~' /usr/local/etc/renderd.conf
+sudo sed -i -e '/HOST=/ s~=.*~= localhost~' /usr/local/etc/renderd.conf
+sudo sed -i '30i\TILEDIR=/var/lib/mod_tile' /usr/local/etc/renderd.conf
+sudo sed -i '31i\TILESIZE=256' /usr/local/etc/renderd.conf
+# sudo echo 'TILEDIR=/var/lib/mod_tile' | sudo tee -a /usr/local/etc/renderd.conf
+# sudo echo 'TILESIZE=256' | sudo tee -a /usr/local/etc/renderd.conf
+
+# Install renderd init script by copying the sample init script included in its package
+sudo cp ~/src/mod_tile/debian/renderd.init /etc/init.d/renderd
+sudo chmod a+x /etc/init.d/renderd
+
+# Edit the init script file
+sudo sed -i -e '/DAEMON=/ s~=.*~= /usr/local/bin/$NAME~' /etc/init.d/renderd
+sudo sed -i -e '/DAEMON_ARGS=/ s~=.*~= "-c /usr/local/etc/renderd.conf"~' /etc/init.d/renderd
+sudo sed -i -e '/RUNASUSER=/ s~=.*~=ubuntu~' /etc/init.d/renderd
+
+# sudo mkdir /var/run/renderd
+# sudo chown ubuntu /var/run/renderd
+
+sudo mkdir -p /var/lib/mod_tile
+sudo chown ubuntu:ubuntu /var/lib/mod_tile
+
+sudo systemctl daemon-reload
+sudo systemctl start renderd
+sudo systemctl enable renderd
+
+# Configure Apache
+echo 'LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so' | sudo tee -a /etc/apache2/mods-available/mod_tile.load
+sudo ln -s /etc/apache2/mods-available/mod_tile.load /etc/apache2/mods-enabled/
+
+# Edit the default virtual host file
+sudo sed -i "2i\        LoadTileConfigFile /usr/local/etc/renderd.conf" /etc/apache2/sites-enabled/000-default.conf
+sudo sed -i '3i\        ModTileRenderdSocketName /var/run/renderd/renderd.sock' /etc/apache2/sites-enabled/000-default.conf
+sudo sed -i '4i\        ModTileRequestTimeout 3' /etc/apache2/sites-enabled/000-default.conf
+sudo sed -i '5i\        ModTileMissingRequestTimeout 60' /etc/apache2/sites-enabled/000-default.conf
+sudo systemctl restart apache2
