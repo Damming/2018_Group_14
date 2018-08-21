@@ -1,0 +1,300 @@
+---
+-hosts: webserver
+ remote_user: ubuntu
+ sudo: yes
+ task:
+    #check if the item is update
+    -name:check latest packages
+     script:apt-get update
+
+    #Moravy
+    #Part2 
+    #create the postgis Instance
+
+    -name: postgis
+     script: psql -U postgres -h $HOSTNAME -c "CREATE DATABASE gis ENCODING 'UTF-8' LC_COLLATE 'en_GB.utf8' LC_CTYPE 'en_GB.utf8' TEMPLATE template0"
+     tags:
+     -Openstreetmap
+
+    #create the postgis Instance
+
+    -name:postgis and hstore(1)
+     script:psql -U postgres -h $HOSTNAME -c "\connect gis"
+     tags:
+     -Openstreetmap
+
+    -name:postgis and hstore(2)
+     script:psql -U postgres -h $HOSTNAME -d gis -c "CREATE EXTENSION postgis"
+     tags:
+     -Openstreetmap
+
+    -name:postgis and hstore(3)
+     script:psql -U postgres -h $HOSTNAME -d gis -c "CREATE EXTENSION hstore"
+     tags:
+     -Openstreetmap
+
+    #add user and grant access
+    -name:grant ubuntu access
+     script:psql -U postgres -c "create user ubuntu;grant all privileges on database gis to ubuntu;"
+     tags:
+     -Openstreetmap
+
+    # Enabling remote access to PostgreSQL
+    -name:access remotely(1)
+     script: sed -i "10i\host all all 0.0.0.0/0 trust" /etc/postgresql/10/main/pg_hba.conf
+     tags:
+     -Openstreetmap
+    
+    -name:access remotely(2)
+     script: sed -i "58i\listen_addresses = '*'" /etc/postgresql/10/main/postgresql.conf
+     tags:
+     -Openstreetmap
+    
+    -name: restart postgressql
+     script: /etc/init.d/postgresql restart
+     tags:
+     -Openstreetmap
+     
+    #Tuning database
+    -name: tune(1)
+     script: echo 'shared_buffers = 128MB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+     tags:
+     -Openstreetmap
+    
+    -name: tune(2)
+     script: echo 'min_wal_size = 80MB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+     tags:
+     -Openstreetmap
+     
+    -name: tune(3)
+     script: echo 'max_wal_size = 1GB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+     tags:
+     -Openstreetmap
+     
+    -name: tune(4)
+     script: echo 'work_mem = 4MB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+     tags:
+     -Openstreetmap
+     
+    -name: tune(5)
+     script: echo 'maintenance_work_mem= 64MB' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+     tags:
+     -Openstreetmap
+     
+    -name: tune(6)
+     script: echo 'autovacuum = off' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+     tags:
+     -Openstreetmap
+     
+    -name: tune(7)
+     script: echo 'fsync = off' | sudo tee -a /etc/postgresql/10/main/postgresql.conf
+     tags:
+     -Openstreetmap
+    
+    -name: stop postgresql
+     script: /etc/init.d/postgresql stop
+     tags:
+     -Openstreetmap
+    
+    -name: start postgresql
+     script: /etc/init.d/postgresql start
+     tags:
+     -Openstreetmap
+     
+    #install Osm2pgsql
+    -name:install osm
+     apt: key adv --keyserver keyserver.ubuntu.com --recv A438A16C88C6BE41CB1616B8D57F48750AC4F2CB
+     tags:
+     -Openstreetmap
+     
+    -name:install osm
+     apt: pkg={{item}} state=latest update-cache=yes
+     with_items:
+     -Openstreetmap
+    
+    #Openstreetmap auckland
+    -name: download oms auckland
+     get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/Auckland.osm.pbf dest:~/src/openstreetmap-carto
+     tags:
+      -Openstreetmap
+      
+    #Load data to postgis
+    -name: Load data to postgis
+     script: sysctl -w vm.overcommit_memory=1
+     tags:
+      -Openstreetmap
+
+    -name: Load data to postgis(2)
+     script: HOSTNAME=localhost
+     tags:
+      -Openstreetmap
+
+    -name: Load data to postgis(3)
+     script:osm2pgsql -s -C 300 -c -G --hstore --style openstreetmap-carto.style --tag-transform-script openstreetmap-carto.lua -d gis -H $HOSTNAME -U postgres Auckland.osm.pbf
+     tags:
+      -Openstreetmap
+    
+    #create indexes and grant Users
+    -name: grantuser(1)
+     script: HOSTNAME=localhost
+     tags:
+      -Openstreetmap
+     
+    -name: grantuser(2)
+     script: scripts/indexes.py | psql -U postgres -h $HOSTNAME -d gis
+     tags:
+      -Openstreetmap
+     
+    -name:grantuser(3)
+     get_url: https://raw.githubusercontent.com/openstreetmap/osm2pgsql/master/install-postgis-osm-user.sh
+     tags:
+      -Openstreetmap
+      
+    -name:grantuser(4)
+     script:  chmod a+x ./install-postgis-osm-user.sh
+     tags:
+      -Openstreetmap
+      
+    -name:grantuser(5)
+     script: ./install-postgis-osm-user.sh gis ubuntu
+     tags:
+      -Openstreetmap  
+      
+    #Configure renderd
+    
+    -name: Configure renderd(1)
+     script:sed -i "2i\socketname=/var/run/renderd/renderd.sock" /usr/local/etc/renderd.conf
+     tags:
+      -Openstreetmap
+      
+    -name: Configure renderd(2)
+     script:sed -i -e '/plugins_dir/ s~=.*~=/usr/lib/mapnik/3.0/input~' /usr/local/etc/renderd.conf
+     tags:
+      -Openstreetmap
+      
+    -name: Configure renderd(3)
+     script:sed -i -e '/font_dir=/ s~=.*~=/usr/share/fonts~' /usr/local/etc/renderd.conf
+     tags:
+      -Openstreetmap
+      
+    -name: Configure renderd(4)
+     script:sed -i -e '/font_dir_recurse=/ s~=.*~=true~' /usr/local/etc/renderd.con
+     tags:
+      -Openstreetmap
+     
+    -name: Configure renderd(5)
+     script:sed -i -e '/URI=/ s~=.*~=/osm_tiles/~' /usr/local/etc/renderd.conf
+     tags:
+      -Openstreetmap
+     
+    -name: Configure renderd(6)
+     script:sed -i -e '/XML=/ s~=.*~=/home/ubuntu/src/openstreetmap-carto/style.xml~' /usr/local/etc/renderd.conf
+     tags:
+      -Openstreetmap
+    
+    -name: Configure renderd(7)
+     script:sed -i -e '/HOST=/ s~=.*~=localhost~' /usr/local/etc/renderd.conf
+     tags:
+      -Openstreetmap
+     
+    # Install renderd init script by copying the sample init script included in its package
+    -name:install renderd
+     action: copy src=~/src/mod_tile/debian/renderd.init dest: /etc/init.d/postgresql
+     tags:
+      -Openstreetmap
+    
+    -name:install renderd
+     script: chmod a+x /etc/init.d/renderd
+     tags:
+      -Openstreetmap
+      
+    # Edit the init script file
+    -name: Edit script(1)
+     script: sed -i -e '/DAEMON=/ s~=.*~= /usr/local/bin/$NAME~' /etc/init.d/renderd
+     tags:
+      -Openstreetmap
+      
+    -name: Edit script(2)
+     script: sed -i -e '/DAEMON_ARGS=/ s~=.*~= "-c /usr/local/etc/renderd.conf"~' /etc/init.d/renderd
+     tags:
+      -Openstreetmap
+      
+    -name: Edit script(3)
+     script: sed -i -e '/RUNASUSER=/ s~=.*~=ubuntu~' /etc/init.d/renderd
+     tags:
+      -Openstreetmap
+      
+    # renderd
+    -name:load 
+     script:systemctl daemon-reload
+     tags:
+      -Openstreetmap
+    
+    -name:start
+     script:systemctl start renderd
+     tags:
+      -Openstreetmap
+      
+    -name:enable
+     script:systemctl enable renderd
+     tags:
+      -Openstreetmap
+      
+    # Configure Apache
+    -name:Apache(1)
+     script:echo 'LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so' | sudo tee -a /etc/apache2/mods-available/mod_tile.load
+     tags:
+      -Openstreetmap
+      
+    -name:Apache(2)
+     script:ln -s /etc/apache2/mods-available/mod_tile.load /etc/apache2/mods-enabled/
+     tags:
+      -Openstreetmap
+    
+    #Edit The default virtual host file
+    -name: Edit virtual(1)
+     script:sed -i "2i\        LoadTileConfigFile /usr/local/etc/renderd.conf" /etc/apache2/sites-enabled/000-default.conf
+     tags:
+      -Openstreetmap
+      
+    -name: Edit virtual(2)
+     script:sed -i '3i\        ModTileRenderdSocketName /var/run/renderd/renderd.sock' /etc/apache2/sites-enabled/000-default.conf
+     tags:
+      -Openstreetmap
+      
+    -name: Edit virtual(3)
+     script:sed -i '4i\        ModTileRequestTimeout 3' /etc/apache2/sites-enabled/000-default.conf
+     tags:
+      -Openstreetmap
+      
+    -name: Edit virtual(4)
+     script:sed -i '5i\        ModTileMissingRequestTimeout 60' /etc/apache2/sites-enabled/000-default.conf
+     tags:
+      -Openstreetmap
+      
+    -name: restart apache2
+     script:systemctl restart apache2
+     tags:
+      -Openstreetmap
+      
+    #OpenLayers
+    -name: get url OpenLayers
+     get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/ol.html dest=/var/www/html/
+     tags:
+      -OpenLayers
+      
+    #leaflet
+    -name: get url leaflet
+      get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/lf.html 
+      tags: 
+       - leaflet
+    #renderd time    
+    -name: go back
+      script: cd ~
+      tags:
+       - rended
+       
+    -name: rendering
+     script:renderd -f -c /usr/local/etc/renderd.conf
+     tags:
+      -renderd
