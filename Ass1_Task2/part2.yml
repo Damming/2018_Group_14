@@ -178,7 +178,7 @@
       -Openstreetmap
       
     -name: Configure renderd(4)
-     script:sed -i -e '/font_dir_recurse=/ s~=.*~=true~' /usr/local/etc/renderd.con
+     script:sed -i -e '/font_dir_recurse=/ s~=.*~=true~' /usr/local/etc/renderd.conf
      tags:
       -Openstreetmap
      
