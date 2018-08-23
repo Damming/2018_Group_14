@@ -340,32 +340,6 @@
           value: localhost
 
       # ---------------- Overlap Part ---------------- 
-
-     
-      # Create directories for renderd and mod_tile
-      - name: creates directory for renderd
-        file: path=/var/run/renderd
-        state: directory
-        mode: 0755 #not suee if needed?
-        
-        #fix this part
-
-      - name: set owner for renderd
-        script: chown ubuntu:ubuntu /var/run/renderd
-        
-      - name: creates directory for mod_tile
-        file: path=/var/run/renderd
-        state: directory
-        mode: 0755 #not suee if needed?
-        
-        
-        #fix this part
-        
-      - name: set owner for renderd
-        script: chown ubuntu:ubuntu /var/lib/mod_tile
-     
-      # ---------------- Overlap Part ---------------- #this part should move up now
-
       # Install renderd init script by copying the sample init script included in its package
       - name: install renderd
         action: copy src=~/src/mod_tile/debian/renderd.init dest: /etc/init.d/postgresql
@@ -396,6 +370,39 @@
           after: 'RUNASUSER='
           regexp: 'ubuntu'
           backup: yes
+          
+     
+      # Create directories for renderd and mod_tile
+      - name: creates directory for renderd
+        file: path=/var/run/renderd
+        state: directory
+        mode: 0755 #not suee if needed?
+        
+       - name: set owner for renderd
+         file:
+            path: /var/run/renderd
+            owner: ubuntu
+            group: ubuntu
+       
+       - name: creates directory for mod_tile
+        file: path=/var/run/renderd
+        state: directory
+        mode: 0755 #not suee if needed?
+               
+
+        
+      - name: set owner for renderd
+        file: 
+            path: /var/lib/mod_tile
+            owner: ubuntu
+            group: ubuntu
+     
+
+       
+     
+      # ---------------- Overlap Part ---------------- #this part should move up now
+
+
         
       # renderd
       - name: reload 
