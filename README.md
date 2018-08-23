@@ -27,6 +27,8 @@ To install OpenStreetMap with your own password, run:
 For example, if your password is 12345678, then run:  
 > bash <(curl -s https://raw.githubusercontent.com/Damming/2018_Group_14/master/Ass1_Task1/set_up_OpenStreetMap_with_password.sh?token=AZvMHP_aR7L5HzGtqENV8DRs57KyngPzks5bhIBYwA%3D%3D) 12345678
 
+* The installation process might be stuck by very a little warnings or some steps need times, those are all normal.
+
 ### Test
 
 OpenStreetMap server is ready when you see these lines  

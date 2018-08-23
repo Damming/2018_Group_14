@@ -1,0 +1,17 @@
+---
+  - name: install openstreetmap
+    hosts: webserver
+    remote_user: ubuntu
+    gather_facts: False
+    become_user: sudo
+    tags: provisioning
+
+    tasks:
+
+      - name: install all
+        raw: sudo apt-get update
+
+      - name: sqwqweqwew
+        raw: sudo apt-get -y install ca-certificates curl unzip gdal-bin tar wget bzip2 build-essential clang
+
+    
