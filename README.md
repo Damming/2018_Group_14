@@ -11,6 +11,7 @@ OpenStreetMap (OSM) is a collaborative project to create a free editable map of 
 #### System required
 AWS Instance - .NET Core 2.1 with Ubuntu Server 18.04 - Version 1.0  
 * Our system does not require .NET support. So, although this system has prebuilt .NET Core, it still can be seen as a blank instance. We just need Ubuntu Server 18.04
+Storage: 30GB
 
 #### Sercurity groups
 > HTTP 			TCP 	80 		0.0.0.0/0  
@@ -19,26 +20,29 @@ AWS Instance - .NET Core 2.1 with Ubuntu Server 18.04 - Version 1.0
 > http 			TCP		443		0.0.0.0/0  
 
 To install OpenStreetMap by default settings, run:  
-> curl https://raw.githubusercontent.com/Damming/2018_Group_14/master/Ass1_Task1/set_up_OpenStreetMap.sh?token=AZvMHPvwl7Ghtf236MWGJ3gp8iN3W_Ywks5be6vzwA%3D%3D | bash
+> curl https://raw.githubusercontent.com/Damming/MapData/master/set_up_OpenStreetMap.sh | bash
 
 To install OpenStreetMap with your own password, run:  
-> bash <(curl -s https://raw.githubusercontent.com/Damming/2018_Group_14/master/Ass1_Task1/set_up_OpenStreetMap_with_password.sh?token=AZvMHP_aR7L5HzGtqENV8DRs57KyngPzks5bhIBYwA%3D%3D) your_password
+> bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/set_up_OpenStreetMap_with_password.sh) your_password
 
 For example, if your password is 12345678, then run:  
-> bash <(curl -s https://raw.githubusercontent.com/Damming/2018_Group_14/master/Ass1_Task1/set_up_OpenStreetMap_with_password.sh?token=AZvMHP_aR7L5HzGtqENV8DRs57KyngPzks5bhIBYwA%3D%3D) 12345678
+> bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/set_up_OpenStreetMap_with_password.sh) 12345678
 
 * The installation process might be stuck by very a little warnings or some steps need times, those are all normal.
 
 ### Test
 
-OpenStreetMap server is ready when you see these lines  
+OpenStreetMap server is ready when you see these lines (the numbers may different)  
 > renderd[12266]: Starting stats thread  
 > renderd[12266]: Using web mercator projection settings  
 > renderd[12266]: Using web mercator projection settings  
 > renderd[12266]: Using web mercator projection settings  
 > renderd[12266]: Using web mercator projection settings  
 
-Then open http://actual_ip/osm_tiles/0/0/0.png or http://autual_ip/ol.html  
+Then open http://actual_ip/osm_tiles/0/0/0.png to see if tiles can be rendered (you can change the values of /0/0/0.png they are scale, x, y respectivly)  
+or  
+http://autual_ip/ol.html to see the relinked online map  
+
 If you want to see if the password is correctly set, press Control+C to interupt the server process, then enter 'cd ~' to go back to the user root directory, then enter 'vi .pgpass'. Then you will see your password after the last colon.
 
 
@@ -52,5 +56,13 @@ These duplicate copies of OSM can be used as staging environments with the same 
 Staging environments allow us to ensure there are no conflicts before making changes live. New duplicates of our original production environment can be made quickly should there be issues caused by changes in another staging environment. 
 
 ### Usage
+#### Install ansible
+Run prepared_localhost.sh. This Shell Script will install Ansible and Boto in the current system. Then, a Ansible playbook used to create a new AWS KeyPair will be created. The new KeyPair is ~/.ssh/keypairForAnsible.yem.  
+Parameters are aws_access_key_id, aws_secret_access_key, region.  
+> bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/prepared_localhost.sh) aws_access_key_id aws_secret_access_key region
+
+#### Run playbook
+> curl https://raw.githubusercontent.com/Damming/MapData/master/prepared_new_instance.yml | ansible-playbook prepared_new_instance.yml
 
 ### Test
+Same as task one.
