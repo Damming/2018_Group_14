@@ -44,6 +44,13 @@ If you want to see if the password is correctly set, press Control+C to interupt
 
 ## Task Two
 
+### Discussion: Use of Management and Staging Environments
+In task one we successfully set up a working OpenStreetMap server that will act as our management server for task two. We will use our management server to create duplicate OSM servers.
+
+These duplicate copies of OSM can be used as staging environments with the same hardware and software settings for testing and evaluating changes privately. By having staging environments that are identical or as close as possible to our production environment, we can minimise differences which may cause or hide issues in the deployment of changes. As developers we want to minimise the risk of errors being transitioned to our live environments and ensure minimal downtime. 
+
+Staging environments allow us to ensure there are no conflicts before making changes live. New duplicates of our original production environment can be made quickly should there be issues caused by changes in another staging environment. 
+
 ### Usage
 
 ### Test
