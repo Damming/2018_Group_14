@@ -158,6 +158,8 @@
       
       # ---------------- Yaozu Part ----------------
 
+      # Set the en_GB locale
+
       - name: Install git
         become: yes
         apt:
@@ -182,8 +184,7 @@
             - libfreetype6
             - libfreetype6-dev
 
-      # Install Mapnik from the standard Ubuntu repository
-      - name: Update Ubuntu & Install essential tools
+      - name: Install Mapnik from the standard Ubuntu repository
         become: yes
         apt: 
           name: "{{ packages }}"
@@ -205,75 +206,56 @@
             - mapnik-utils 
             - python-mapnik
 
-      #Install Apache HTTP Server
-      -name: Update Ubuntu & Install essential tools
-       become: yes
-       apt: 
-        name: "{{ packages }}"
-        state: latest
-        update_cache: yes
+      - name: Install Apache HTTP Server
+        become: yes
+        apt: 
+          name: "{{ packages }}"
+          state: latest
+        vars:
+          packages:
+            - apache2 
+            - apache2-dev
 
-       vars:
-         packages:
-          apache2 
-          apache2-dev
+      # Install Mod_tile from source
+      - name: Install necessary packages
+        become: yes
+        apt: 
+          name: "{{ packages }}"
+          state: latest
+        vars:
+          packages:
+            - autoconf 
+            - autogen 
+            - libmapnik3.0
 
-      #Install Mod_tile from source
-      -name: Update Ubuntu & Install essential tools
-       become: yes
-       apt: 
-        name: "{{ packages }}"
-        state: latest
-        update_cache: yes
+      - name: 
 
-       vars:
-        packages:
-          autoconf 
-          autogen 
-          libmapnik3.0
+      - name: Install Yaml and Package Manager for Python & Mapnik Utilities
+        become: yes
+        apt: 
+          name: "{{ packages }}"
+          state: latest
+        vars:
+          packages:
+            - python-yaml
+            - python-pip
+            - mapnik-utils
 
-      # Install Yaml and Package Manager for Python
-      -name: Install git
-       become: yes
-       apt:
-        name: python-yaml
-        state: latest
-
-      -name: Install git
-       become: yes
-       apt:
-        name: python-pip
-        state: latest
-
-      #Install Mapnik Utilities
-      -name: Install git
-       become: yes
-       apt:
-        name: mapnik-utils
-        state: latest
+      # Install openstreetmap-carto
 
       # Install the fonts needed by openstreetmap-carto
-      -name: Update Ubuntu & Install essential tools
-       become: yes
-       apt: 
-        name: "{{ packages }}"
-        state: latest
-        update_cache: yes
-
-       vars:
-         packages:
-           fonts-noto-cjk 
-           fonts-noto-hinted 
-           fonts-noto-unhinted 
-           fonts-hanazono 
-           ttf-unifont
-
-
-                    
-       
-
-
-
+      - name: Install font tools
+        become: yes
+        apt: 
+          name: "{{ packages }}"
+          state: latest
+        vars:
+          packages:
+            - fonts-noto-cjk 
+            - fonts-noto-hinted 
+            - fonts-noto-unhinted 
+            - fonts-hanazono 
+            - ttf-unifont
 
       # Install the fonts needed by openstreetmap-carto
       - synchronize:
@@ -344,22 +326,22 @@
           src: /noto-fonts/unhinted/NotoSansSymbols2-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         delegate_to: "{{ inventory_hostname }}"
-      -name: fc-cache
-       command: sudo fc-cache -fv
+      - name: fc-cache
+        command: sudo fc-cache -fv
 
       #Install git
-      -name: Install git
-       become: yes
-       apt:
-        name: fontconfig
-        state: latest
+      - name: Install git
+        become: yes
+        apt:
+          name: fontconfig
+          state: latest
 
       #Create the data folder
       - name: Creates directory
         file: path=/src state=directory
 
-      -name: Run script
-       command: scripts/get-shapefiles.py
+      - name: Run script
+        command: scripts/get-shapefiles.py
           chdir: src/openstreetmap-carto
 
 
@@ -498,6 +480,7 @@
 
       # Configure renderd
       - name: Configure rendered(1) socketname
+        become: yes
         ini_file:
           path: /usr/local/etc/renderd.conf
           section: renderd
@@ -505,6 +488,7 @@
           value: /var/run/renderd/renderd.sock
 
       - name: Configure rendered(2) plugins_dir
+        become: yes
         ini_file:
           path: /usr/local/etc/renderd.conf
           section: mapnik
@@ -512,6 +496,7 @@
           value: /usr/lib/mapnik/3.0/input/
 
       - name: Configure rendered(3) font_dir
+        become: yes
         ini_file:
           path: /usr/local/etc/renderd.conf
           section: mapnik
@@ -519,6 +504,7 @@
           value: /usr/share/fonts
 
       - name: Configure rendered(4) font_dir_recurse
+        become: yes
         ini_file:
           path: /usr/local/etc/renderd.conf
           section: mapnik
@@ -526,6 +512,7 @@
           value: true
 
       - name: Configure rendered(5) URI
+        become: yes
         ini_file:
           path: /usr/local/etc/renderd.conf
           section: default
@@ -533,6 +520,7 @@
           value: /osm_tiles/
 
       - name: Configure rendered(6) XML
+        become: yes
         ini_file:
           path: /usr/local/etc/renderd.conf
           section: default
@@ -540,6 +528,7 @@
           value: /home/ubuntu/src/openstreetmap-carto/style.xml
 
       - name: Configure rendered(7) HOST
+        become: yes
         ini_file:
           path: /usr/local/etc/renderd.conf
           section: default
@@ -549,11 +538,15 @@
       # ---------------- Overlap Part ---------------- 
 
       # # Install renderd init script by copying the sample init script included in its package
-      # - name: install renderd(1)
-      #   action: copy src=~/src/mod_tile/debian/renderd.init dest: /etc/init.d/postgresql
+      - name: install renderd(1)
+        become: yes
+        copy:
+          src: ~/src/mod_tile/debian/renderd.init
+          dest: /etc/init.d/renderd
+          mode: a+x
           
       # - name: install renderd(2)
-      #   script: chmod a+x /etc/init.d/renderd     
+      #   shell: chmod a+x /etc/init.d/renderd   
 
 
       # # Edit the init script file - THIS STILL NEEDS CONVERTING. I considered using lineinfile but struggled a bit
@@ -571,25 +564,6 @@
             
       # - name: Edit script(3)
       #   script: sed -i -e '/RUNASUSER=/ s~=.*~=ubuntu~' /etc/init.d/renderd
-      
-
-
-      # Create directories for renderd and mod_tile
-      - name: creates directory for renderd
-        file: path=/var/run/renderd
-        state: directory
-        # mode: 0755 #not suee if needed?
-
-      - name: set owner for renderd
-        script: chown ubuntu:ubuntu /var/run/renderd
-        
-      - name: creates directory for mod_tile
-        file: path=/var/run/renderd
-        state: directory
-        # mode: 0755 #not suee if needed?
-
-      - name: set owner for renderd
-        script: chown ubuntu:ubuntu /var/lib/mod_tile
 
       # Edit the init script file
       - name: edit script
@@ -612,24 +586,91 @@
           after: 'RUNASUSER='
           regexp: 'ubuntu'
           backup: yes
+      
+
+
+      # Create directories for renderd and mod_tile
+      - name: creates directory for renderd
+        become: yes
+        file:
+          path: /var/run/renderd
+          state: directory
+          owner: ubuntu
+        # mode: 0755 #not suee if needed?
+
+      # - name: set owner for renderd
+      #   become: yes
+      #   shell: chown ubuntu:ubuntu /var/run/renderd warn=False
+        
+      - name: creates directory for mod_tile
+        become: yes
+        file: 
+          path: /var/lib/mod_tile
+          state: directory
+          owner: ubuntu
+        # mode: 0755 #not suee if needed?
+
+      # - name: set owner for renderd
+      #   become: yes
+      #   shell: chown ubuntu:ubuntu /var/lib/mod_tile warn=False
+
+      # # Edit the init script file
+      # - name: edit script
+      #   replace:
+      #     path: /etc/init.d/renderd
+      #     after: 'DAEMON='
+      #     regexp: '(\s+)/usr/local/bin/$NAME(\s+.*)?$'
+      #     backup: yes
+       
+      # - name: edit script
+      #   replace:
+      #     path: /etc/init.d/renderd
+      #     after: 'DAEMON_ARGS='
+      #     regexp: '(\s+)"-c /usr/local/etc/renderd.conf"(\s+)'
+      #     backup: yes
+          
+      # - name: edit script
+      #   replace:
+      #     path: /etc/init.d/renderd
+      #     after: 'RUNASUSER='
+      #     regexp: 'ubuntu'
+      #     backup: yes
 
       # Load and enable renderd
-      - name: daemon reload 
-        script: systemctl daemon-reload
+      # - name: daemon reload 
+      #   sysctl:
+      #     name: daemon_reload
+      #     reload: yes
+      - name: daemon reload
+        become: yes
+        shell: systemctl daemon-reload
+      
+      # - name: start renderd
+      #   sysctl:
+      #     name: renderd
+      #     state: present
+      
+      # - name: enable renderd
+      #   sysctl:
+      #     name: renderd
+      #     enable: yes
+      
         
       - name: start renderd
-        script: systemctl start renderd
+        become: yes
+        shell: systemctl start renderd
           
       - name: enable renderd
-        script: systemctl enable renderd
+        become: yes
+        shell: systemctl enable renderd
      
       # ---------------- Overlap Part ---------------- 
 
       # # Install renderd init script by copying the sample init script included in its package
       # - name: install renderd
       #   action: copy src=~/src/mod_tile/debian/renderd.init dest: /etc/init.d/postgresql
-      #   tags:
-      #     name: Openstreetmap
+      # #   tags:
+      # #     name: Openstreetmap
       
       # - name: install renderd
       #   shell: dest=/etc/init.d/renderd mode= a+x
@@ -656,7 +697,7 @@
       #     regexp: 'ubuntu'
       #     backup: yes
         
-      # # renderd
+      # renderd
       # - name: reload 
       #   sysctl:
       #     daemon_reload: yes
@@ -675,25 +716,29 @@
       - name: create file and write into item
         become: yes
         file: 
-          path: '/etc/apache2/mods-available/mod_tile.load'
+          path: /etc/apache2/mods-available/mod_tile.load
           state: touch
           
       - name: write into file
+        become: yes
         lineinfile:
-              path: '/etc/apache2/mods-available/mod_tile.load'
-              line: 'LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so'
+          path: /etc/apache2/mods-available/mod_tile.load
+          line: LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so
               
       - name: symlink
-        file: 
-          src: '/etc/apache2/mods-enabled/'
-          dest: '/etc/apache2/mods-available/mod_tile.load'
-          state: link
+        become: yes
+        shell: ln -s /etc/apache2/mods-available/mod_tile.load /etc/apache2/mods-enabled/ warn=False
+      #   file: 
+      #     src: /etc/apache2/mods-enabled/
+      #     dest: /etc/apache2/mods-available/mod_tile.load
+      #     state: link
       
       # Edit The default virtual host file
       - name: add more lines
+        become: yes
         lineinfile:
-              dest: /etc/apache2/sites-enabled/000-default.conf
-              line: "{{ item }}"
+          dest: /etc/apache2/sites-enabled/000-default.conf
+          line: "{{ item }}"
         with_items:
           - 'LoadTileConfigFile /usr/local/etc/renderd.conf'
           - 'ModTileRenderdSocketName /var/run/renderd/renderd.sock'
@@ -711,9 +756,11 @@
           state: restarted
        
       - name: OpenLayers
+        become: yes
         get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/ol.html dest=/var/www/html/
         
       - name: Leaflet
+        become: yes
         get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/lf.html dest=/var/www/html/
       
       - name: Start renderd
