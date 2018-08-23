@@ -1,0 +1,218 @@
+# Update Ubuntu & Install essential tools
+-name: Update 
+ become: true
+ apt:
+ update_cache: yes
+
+#Install git
+-name: Install git
+ become: yes
+ apt:
+  name: git
+  state: latest
+ 
+#Update Freetype6
+-name: add repository
+ sudo: yes
+ apt_repository: 
+ repo: ppa:no1wantdthisname/ppa
+ update-cache: yes
+
+-name: Update 
+ become: true
+ apt:
+ update_cache: yes
+
+- name: Update Ubuntu & Install essential tools
+  become: yes
+  apt: 
+    name: "{{ packages }}"
+    state: latest
+    update_cache: yes
+   vars:
+    packages:
+      libfreetype6
+      libfreetype6-dev
+
+#Install Mapnik from the standard Ubuntu repository
+-name: Update Ubuntu & Install essential tools
+ become: yes
+ apt: 
+  name: "{{ packages }}"
+  state: latest
+  update_cache: yes
+
+ vars:
+   packages:
+    git
+    autoconf
+    libtool
+    libxm12-dev
+    libbz2-dev
+    libgeos-dev
+    libgeos++-dev
+    libproj-dev 
+    gdal-bin 
+    libgdal-dev 
+    g++
+    libmapnik-dev 
+    mapnik-utils 
+    python-mapnik
+
+#Install Apache HTTP Server
+-name: Update Ubuntu & Install essential tools
+ become: yes
+ apt: 
+  name: "{{ packages }}"
+  state: latest
+  update_cache: yes
+
+ vars:
+   packages:
+    apache2 
+    apache2-dev
+
+#Install Mod_tile from source
+-name: Update Ubuntu & Install essential tools
+ become: yes
+ apt: 
+  name: "{{ packages }}"
+  state: latest
+  update_cache: yes
+
+ vars:
+  packages:
+    autoconf 
+    autogen 
+    libmapnik3.0
+
+# Install Yaml and Package Manager for Python
+-name: Install git
+ become: yes
+ apt:
+  name: python-yaml
+  state: latest
+
+-name: Install git
+ become: yes
+ apt:
+  name: python-pip
+  state: latest
+
+#Install Mapnik Utilities
+-name: Install git
+ become: yes
+ apt:
+  name: mapnik-utils
+  state: latest
+
+# Install the fonts needed by openstreetmap-carto
+-name: Update Ubuntu & Install essential tools
+ become: yes
+ apt: 
+  name: "{{ packages }}"
+  state: latest
+  update_cache: yes
+
+ vars:
+   packages:
+     fonts-noto-cjk 
+     fonts-noto-hinted 
+     fonts-noto-unhinted 
+     fonts-hanazono 
+     ttf-unifont
+
+
+              
+ 
+
+
+
+
+# Install the fonts needed by openstreetmap-carto
+- synchronize:
+    src: /noto-emoji/fonts/NotoColorEmoji.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-emoji/fonts/NotoEmoji-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoNaskhArabicUI-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoNaskhArabicUI-Bold.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansAdlam-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansAdlamUnjoined-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansChakma-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansOsage-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansSinhalaUI-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansCherokee-Bold.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansSinhalaUI-Bold.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansSymbols-Bold.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+- synchronize:
+    src: /noto-fonts/unhinted/NotoSansSymbols2-Regular.ttf
+    dest: /usr/share/fonts/truetype/noto
+  delegate_to: "{{ inventory_hostname }}"
+-name: fc-cache
+ command: sudo fc-cache -fv
+
+#Install git
+-name: Install git
+ become: yes
+ apt:
+  name: fontconfig
+  state: latest
+
+#Create the data folder
+- name: Creates directory
+  file: path=/src state=directory
+
+-name: Run script
+ command: scripts/get-shapefiles.py
+    chdir: src/openstreetmap-carto
+
