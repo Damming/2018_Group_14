@@ -10,8 +10,8 @@ OpenStreetMap (OSM) is a collaborative project to create a free editable map of 
 
 #### System required
 AWS Instance - .NET Core 2.1 with Ubuntu Server 18.04 - Version 1.0  
-* Our system does not require .NET support. So, although this system has prebuilt .NET Core, it still can be seen as a blank instance. We just need Ubuntu Server 18.04  
-Storage: 30GB
+Storage: 30GB  
+* Our system does not require .NET support. So, although this system has prebuilt .NET Core, it still can be seen as a blank instance. We just need Ubuntu Server 18.04
 
 #### Sercurity groups
 > HTTP 			TCP 	80 		0.0.0.0/0  
@@ -60,7 +60,8 @@ Staging environments allow us to ensure there are no conflicts before making cha
 Run prepared_localhost.sh. This Shell Script will install Ansible and Boto in the current system. Then, a Ansible playbook used to create a new AWS KeyPair will be created. The new KeyPair is ~/.ssh/keypairForAnsible.yem.  
 Parameters are aws_access_key_id, aws_secret_access_key, region.  
 > bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/prepared_localhost.sh) aws_access_key_id aws_secret_access_key region
-For example your aws_access_key_id is 'aaaa' and your aws_secret_access_key is 'bbbb' and you want to create the new instance in us-west-2, then run:
+
+For example your aws_access_key_id is 'aaaa' and your aws_secret_access_key is 'bbbb' and you want to create the new instance in us-west-2, then run:  
 > bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/prepared_localhost.sh) aaaa bbbb us-west-2
 
 #### Run playbook
