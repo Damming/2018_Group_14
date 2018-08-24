@@ -75,4 +75,4 @@ For example your aws_access_key_id is 'aaaa' and your aws_secret_access_key is '
 > curl https://raw.githubusercontent.com/Damming/MapData/master/prepared_new_instance.yml | ansible-playbook prepared_new_instance.yml
 
 ### Test
-Same as task one.
+http://autual_ip/ol.html
