@@ -448,17 +448,17 @@
       - name: Run script
         shell: scripts/get-shapefiles.py
         args:
-          chdir: ~/src/openstreetmap-carto
+          chdir: /home/ubuntu/src/openstreetmap-carto
           
       - name: Download Node.js setup script
-        shell: curl -sL https://deb.nodesource.com/setup | sudo bash -
+        shell: curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && sudo apt-get install -y nodejs
         args:
           warn: no
             
       - name: install node.js
         apt: 
-          name: nodejs
-          state: present
+          name: npm
+          state: latest
       
       # Install the latest version 0 of carto
       - name: install lest verion 0 of carto
@@ -475,7 +475,7 @@
         shell: node -e "console.log(require('mapnik-reference'))"
         
       - name: test and produce carto
-        shell: carto -a "3.0.20" project.mml > style.xml
+        shell: carto -a "3.0.20" project.mml > /home/ubuntu/src/openstreetmap-carto/style.xml
         
       - name: test
         shell: ls -l style.xml
