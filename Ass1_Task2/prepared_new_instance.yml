@@ -171,7 +171,7 @@
         become: true
         apt_repository: 
           repo: ppa:no1wantdthisname/ppa
-          state: latest
+          state: present
 
       - name: Install libfreetype6 & libfreetype6-dev
         become: yes
@@ -194,7 +194,7 @@
             - git
             - autoconf
             - libtool
-            - libxm12-dev
+            - libxml2-dev
             - libbz2-dev
             - libgeos-dev
             - libgeos++-dev
@@ -235,33 +235,42 @@
           
       - name: git clone
         git:
-            repo:https://github.com/openstreetmap/mod_tile.git
-            clone:yes
-            path: ~/src
+          repo: https://github.com/openstreetmap/mod_tile.git
+          clone: yes
+          dest: ~/src
         
       - name: autogen and config
-        shell:   ./autogen.sh
-            chdir:/src/mod_tile 
+        shell: ./autogen.sh
+        args:
+          chdir: ~/src/mod_tile 
         
       - name: Configure mod_tile.
-        shell:   ./configure
-            chdir:/src/mod_tile
+        shell: ./configure
+        args:
+          chdir: ~/src/mod_tile
         
-      - name:  make mod_tile
+      - name: make mod_tile
         shell: make
-            chdir: /src/mod_tile 
+        args:
+          chdir: ~/src/mod_tile 
         
       - name: make install
+        become: yes
         shell: make install
-            chdir: /src/mod_tile  
+        args:
+          chdir: /home/ubuntu/src/mod_tile
         
       - name: make install (2)
+        become: yes
         shell: make install-mod_tile
-            chdir: /src/mod_tile  
+        args:
+          chdir: /home/ubuntu/src/mod_tile  
         
       - name: make install (3)
-        ashell: ldconfig
-            chdir: /src/mod_tile  
+        become: yes
+        shell: ldconfig
+        args:
+          chdir: /home/ubuntu/src/mod_tile  
         
         
       ## Install Yaml and Package Manager for Python
@@ -276,17 +285,14 @@
             - python-pip
             - mapnik-utils
 
-      # Install openstreetmap-carto ########### CHANGE###########
-      - name: git  openstreetmap-carto
-        git:
-            path: ~/src
-            clone: yes
-            repo: https://github.com/gravitystorm/openstreetmap-carto.git
+      # Install openstreetmap-carto
+      - name: git openstreetmap-carto
+        get_url: url=https://github.com/gravitystorm/openstreetmap-carto.git dest=~/src/
+
       # Install the fonts needed by openstreetmap-carto
       - name: Install font tools
         become: yes
         apt: 
-          path: /src/openstreetmap-carto
           name: "{{ packages }}"
           state: latest
         vars:
@@ -299,111 +305,111 @@
             
       - name: git noto emoji
         git:
-            path: /src
-            clone: yes
-            repo: https://github.com/googlei18n/noto-emoji.git
+          dest: ~/src
+          clone: yes
+          repo: https://github.com/googlei18n/noto-emoji.git
        
       - name: git noto font
         git:
-            path:/src
-            clone: yes
-            repo: https://github.com/googlei18n/noto-fonts.git
+          dest: ~/src
+          clone: yes
+          repo: https://github.com/googlei18n/noto-fonts.git
 
       # Install the fonts needed by openstreetmap-carto
-      - synchronize:
-          src: /noto-emoji/fonts/NotoColorEmoji.ttf
+      - copy:
+          src: ~/src/noto-emoji/fonts/NotoColorEmoji.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-emoji/fonts/NotoEmoji-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-emoji/fonts/NotoEmoji-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoNaskhArabicUI-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoNaskhArabicUI-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoNaskhArabicUI-Bold.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoNaskhArabicUI-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansAdlam-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansAdlam-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansAdlamUnjoined-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansAdlamUnjoined-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansChakma-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansChakma-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansOsage-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansOsage-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansSinhalaUI-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansSinhalaUI-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansCherokee-Bold.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansCherokee-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansSinhalaUI-Bold.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansSinhalaUI-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansSymbols-Bold.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansSymbols-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
-      - synchronize:
-          src: /noto-fonts/unhinted/NotoSansSymbols2-Regular.ttf
+        become: yes
+      - copy:
+          src: ~/src/noto-fonts/unhinted/NotoSansSymbols2-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
-        delegate_to: "{{ inventory_hostname }}"
+        become: yes
       - name: fc-cache
         become: yes
-        shell:  fc-cache -fv
+        shell: fc-cache -fv
       - name: fc-list
-        shell:  fc-list
+        shell: fc-list
         
       # Install old unifont Medium font (just removes the warning)
       - name: make directory
         file: 
-            path:/src/OldUnifont 
-            state: directory
+          path: ~/src/OldUnifont 
+          state: directory
             
       - name: get debian
         get_url: 
-            url:http://http.debian.net/debian/pool/main/u/unifont/unifont_5.1.20080914.orig.tar.gz
-            dest: /src/OldUnifont
+          url: http://http.debian.net/debian/pool/main/u/unifont/unifont_5.1.20080914.orig.tar.gz
+          dest: ~/src/OldUnifont
       
       - name: unzipping file
         unarchive:
-            src:unifont_5.1.20080914.orig.tar.gz
-            dest:unifont-5.1.20080914/font/precompiled/unifont.ttf
+          src: unifont_5.1.20080914.orig.tar.gz
+          dest: ~/src/OldUnifont/unifont-5.1.20080914/font/precompiled/unifont.ttf
             
       - name: copying file
         copy:
-            src:unifont-5.1.20080914/font/precompiled/unifont.ttf
-            dest:/usr/share/fonts/truetype/unifont/OldUnifont.ttf
+            src: unifont-5.1.20080914/font/precompiled/unifont.ttf
+            dest: /usr/share/fonts/truetype/unifont/OldUnifont.ttf
       
       - name: fc-cache
         become: yes
@@ -421,15 +427,17 @@
       - name: Run script
         shell: scripts/get-shapefiles.py
         args:
-          chdir: src/openstreetmap-carto
+          chdir: ~/src/openstreetmap-carto
           
       - name: Download Node.js setup script
         shell: curl -sL https://deb.nodesource.com/setup | sudo bash -
         args:
-            warn: no
+          warn: no
             
       - name: install node.js
-        apt: name= nodejs state=present
+        apt: 
+          name: nodejs
+          state: present
       
       #install the latest version 0 of carto
       - name: install lest verion 0 of carto
@@ -439,8 +447,8 @@
       #install mapnik-reference
       - name: install mapnik
         npm: 
-            name: mapnik-reference
-            state: latest
+          name: mapnik-reference
+          state: latest
             
       - name: install mapnik
         shell: node -e "console.log(require('mapnik-reference'))"
@@ -454,41 +462,37 @@
       #Install PostgreSQL
       - name: update
         apt: 
-            update_cache: yes
+          update_cache: yes
             
       - name: installing postgresql
-        apt: name= {{item}} state= present
+        apt: 
+          name: "{{ item }}"
+          state: present
         with_items:
-        - postgresql
-        - postgis
-        - pgadmin3
-        - postgresql-contrib
+          - postgresql
+          - postgis
+          - pgadmin3
+          - postgresql-contrib
         
       # Set the password for the postgres user
       - name: create a file
         copy:
-            content: 'localhost:5432:*:postgres:postgres_007%'
-            dest: ~/.pgpass
-            mode: 600
+          content: 'localhost:5432:*:postgres:postgres_007%'
+          dest: ~/.pgpass
+          mode: 600
         
       - name: trust
         become: yes
-        lineinfile:
-            path:/etc/postgresql/10/main/pg_hba.conf
-            line: 's|peer|trust'
+        shell: sed -i 's|peer|trust|' /etc/postgresql/10/main/pg_hba.conf
             
       - name: trust (2)
         become: yes
-        lineinfile:
-            path: /etc/postgresql/10/main/pg_hba.conf
-            line: 's|md5|trust|'
-            
-      
+        shell: sudo sed -i 's|md5|trust|' /etc/postgresql/10/main/pg_hba.conf
             
       - name: restart postgresql
         service: 
-            name:postgresql 
-            state:restarted
+          name: postgresql 
+          state: restarted
       
       # ---------------- Moravy Part ----------------
       
@@ -572,8 +576,8 @@
           state: latest
           update_cache: yes
 
-      - name: cd to openstreetmap-carto
-        shell: cd ~/src/openstreetmap-carto
+      # - name: cd to openstreetmap-carto
+      #   shell: cd ~/src/openstreetmap-carto
       
       - name: Get an OpenStreetMap data extract
         get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/Auckland.osm.pbf dest=~/src/openstreetmap-carto
@@ -772,4 +776,3 @@
       
       - name: Start renderd
         shell: renderd -f -c /usr/local/etc/renderd.conf
-            
