@@ -158,7 +158,25 @@
       
       # ---------------- Yaozu Part ----------------
 
-     # Set the en_GB locale
+      # Set the en_GB locale
+      - name: generate language
+        become: yes
+        shell: locale-gen en_GB en_GB.UTF-8
+
+      - name: set LANG
+        become: yes
+        shell: update-locale LANG='en_GB.UTF-8'
+
+      - name: set LANGUAGE
+        become: yes
+        shell: update-locale LANGUAGE='en_GB.UTF-8'
+
+      - name: set LC_ALL
+        become: yes
+        shell: update-locale LC_ALL='en_GB.UTF-8'
+
+      - name: reload locale
+        shell: . /etc/default/locale
 
       - name: Install git
         become: yes
@@ -230,29 +248,29 @@
 
       - name: make directory
         file:
-          path: ~/src
+          path: /home/ubuntu/src
           state: directory
           
       - name: git clone
         git:
-          repo: https://github.com/openstreetmap/mod_tile.git
+          repo: 'https://github.com/openstreetmap/mod_tile.git'
           clone: yes
-          dest: ~/src
+          dest: /home/ubuntu/src/mod_tile
         
       - name: autogen and config
         shell: ./autogen.sh
         args:
-          chdir: ~/src/mod_tile 
+          chdir: /home/ubuntu/src/mod_tile 
         
       - name: Configure mod_tile.
         shell: ./configure
         args:
-          chdir: ~/src/mod_tile
+          chdir: /home/ubuntu/src/mod_tile
         
       - name: make mod_tile
         shell: make
         args:
-          chdir: ~/src/mod_tile 
+          chdir: /home/ubuntu/src/mod_tile 
         
       - name: make install
         become: yes
@@ -273,7 +291,7 @@
           chdir: /home/ubuntu/src/mod_tile  
         
         
-      ## Install Yaml and Package Manager for Python
+      # Install Yaml and Package Manager for Python
       - name: Install Yaml and Package Manager for Python & Mapnik Utilities
         become: yes
         apt: 
@@ -287,7 +305,10 @@
 
       # Install openstreetmap-carto
       - name: git openstreetmap-carto
-        get_url: url=https://github.com/gravitystorm/openstreetmap-carto.git dest=~/src/
+        git:
+          repo: 'https://github.com/gravitystorm/openstreetmap-carto.git'
+          clone: yes
+          dest: /home/ubuntu/src/openstreetmap-carto
 
       # Install the fonts needed by openstreetmap-carto
       - name: Install font tools
@@ -305,15 +326,15 @@
             
       - name: git noto emoji
         git:
-          dest: ~/src
+          dest: /home/ubuntu/src/noto-emoji
           clone: yes
-          repo: https://github.com/googlei18n/noto-emoji.git
+          repo: 'https://github.com/googlei18n/noto-emoji.git'
        
       - name: git noto font
         git:
-          dest: ~/src
+          dest: /home/ubuntu/src/noto-fonts
           clone: yes
-          repo: https://github.com/googlei18n/noto-fonts.git
+          repo: 'https://github.com/googlei18n/noto-fonts.git'
 
       # Install the fonts needed by openstreetmap-carto
       - copy:
@@ -384,46 +405,46 @@
           src: ~/src/noto-fonts/unhinted/NotoSansSymbols2-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
+
       - name: fc-cache
         become: yes
         shell: fc-cache -fv
+
+      - name: Install fontconfig
+        become: yes
+        apt:
+          name: fontconfig
+          state: latest
+
       - name: fc-list
         shell: fc-list
         
       # Install old unifont Medium font (just removes the warning)
       - name: make directory
         file: 
-          path: ~/src/OldUnifont 
+          path: /home/ubuntu/src/OldUnifont 
           state: directory
             
       - name: get debian
         get_url: 
           url: http://http.debian.net/debian/pool/main/u/unifont/unifont_5.1.20080914.orig.tar.gz
-          dest: ~/src/OldUnifont
+          dest: /home/ubuntu/src/OldUnifont
       
       - name: unzipping file
         unarchive:
-          src: unifont_5.1.20080914.orig.tar.gz
-          dest: ~/src/OldUnifont/unifont-5.1.20080914/font/precompiled/unifont.ttf
+          src: /home/ubuntu/src/OldUnifont/unifont_5.1.20080914.orig.tar.gz
+          dest: /home/ubuntu/src/OldUnifont/unifont-5.1.20080914/font/precompiled/unifont.ttf
             
       - name: copying file
         copy:
-            src: unifont-5.1.20080914/font/precompiled/unifont.ttf
-            dest: /usr/share/fonts/truetype/unifont/OldUnifont.ttf
+          src: /home/ubuntu/src/OldUnifont/unifont-5.1.20080914/font/precompiled/unifont.ttf
+          dest: /usr/share/fonts/truetype/unifont/OldUnifont.ttf
       
       - name: fc-cache
         become: yes
-        shell:  fc-cache -fv
-        
-      #Install git
-      - name: Install git
-        become: yes
-        apt:
-          name: fontconfig
-          state: latest
+        shell: fc-cache -fv
 
-      #Create the data folder get-shapefiles.py
-   
+      # Create the data folder get-shapefiles.pys
       - name: Run script
         shell: scripts/get-shapefiles.py
         args:
@@ -439,12 +460,12 @@
           name: nodejs
           state: present
       
-      #install the latest version 0 of carto
+      # Install the latest version 0 of carto
       - name: install lest verion 0 of carto
         become: yes
         shell: npm install -g carto@0
         
-      #install mapnik-reference
+      # Install mapnik-reference
       - name: install mapnik
         npm: 
           name: mapnik-reference
@@ -459,7 +480,7 @@
       - name: test
         shell: ls -l style.xml
       
-      #Install PostgreSQL
+      # Install PostgreSQL
       - name: update
         apt: 
           update_cache: yes
