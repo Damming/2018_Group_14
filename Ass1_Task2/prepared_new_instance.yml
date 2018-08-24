@@ -158,7 +158,7 @@
       
       # ---------------- Yaozu Part ----------------
 
-      # Set the en_GB locale
+     # Set the en_GB locale
 
       - name: Install git
         become: yes
@@ -216,7 +216,7 @@
             - apache2 
             - apache2-dev
 
-      # Install Mod_tile from source
+      # Install Mod_tile from source #########CHANGE###########
       - name: Install necessary packages
         become: yes
         apt: 
@@ -228,8 +228,43 @@
             - autogen 
             - libmapnik3.0
 
-      - name: 
-
+      - name: make directory
+        file:
+          path: ~/src
+          state: directory
+          
+      - name: git clone
+        git:
+            repo:https://github.com/openstreetmap/mod_tile.git
+            clone:yes
+            path: ~/src
+        
+      - name: autogen and config
+        shell:   ./autogen.sh
+            chdir:/src/mod_tile 
+        
+      - name: Configure mod_tile.
+        shell:   ./configure
+            chdir:/src/mod_tile
+        
+      - name:  make mod_tile
+        shell: make
+            chdir: /src/mod_tile 
+        
+      - name: make install
+        shell: make install
+            chdir: /src/mod_tile  
+        
+      - name: make install (2)
+        shell: make install-mod_tile
+            chdir: /src/mod_tile  
+        
+      - name: make install (3)
+        ashell: ldconfig
+            chdir: /src/mod_tile  
+        
+        
+      ## Install Yaml and Package Manager for Python
       - name: Install Yaml and Package Manager for Python & Mapnik Utilities
         become: yes
         apt: 
@@ -241,12 +276,17 @@
             - python-pip
             - mapnik-utils
 
-      # Install openstreetmap-carto
-
+      # Install openstreetmap-carto ########### CHANGE###########
+      - name: git  openstreetmap-carto
+        git:
+            path: ~/src
+            clone: yes
+            repo: https://github.com/gravitystorm/openstreetmap-carto.git
       # Install the fonts needed by openstreetmap-carto
       - name: Install font tools
         become: yes
         apt: 
+          path: /src/openstreetmap-carto
           name: "{{ packages }}"
           state: latest
         vars:
@@ -256,6 +296,18 @@
             - fonts-noto-unhinted 
             - fonts-hanazono 
             - ttf-unifont
+            
+      - name: git noto emoji
+        git:
+            path: /src
+            clone: yes
+            repo: https://github.com/googlei18n/noto-emoji.git
+       
+      - name: git noto font
+        git:
+            path:/src
+            clone: yes
+            repo: https://github.com/googlei18n/noto-fonts.git
 
       # Install the fonts needed by openstreetmap-carto
       - synchronize:
@@ -327,8 +379,36 @@
           dest: /usr/share/fonts/truetype/noto
         delegate_to: "{{ inventory_hostname }}"
       - name: fc-cache
-        command: sudo fc-cache -fv
-
+        become: yes
+        shell:  fc-cache -fv
+      - name: fc-list
+        shell:  fc-list
+        
+      # Install old unifont Medium font (just removes the warning)
+      - name: make directory
+        file: 
+            path:/src/OldUnifont 
+            state: directory
+            
+      - name: get debian
+        get_url: 
+            url:http://http.debian.net/debian/pool/main/u/unifont/unifont_5.1.20080914.orig.tar.gz
+            dest: /src/OldUnifont
+      
+      - name: unzipping file
+        unarchive:
+            src:unifont_5.1.20080914.orig.tar.gz
+            dest:unifont-5.1.20080914/font/precompiled/unifont.ttf
+            
+      - name: copying file
+        copy:
+            src:unifont-5.1.20080914/font/precompiled/unifont.ttf
+            dest:/usr/share/fonts/truetype/unifont/OldUnifont.ttf
+      
+      - name: fc-cache
+        become: yes
+        shell:  fc-cache -fv
+        
       #Install git
       - name: Install git
         become: yes
@@ -336,17 +416,79 @@
           name: fontconfig
           state: latest
 
-      #Create the data folder
-      - name: Creates directory
-        file: path=/src state=directory
-
+      #Create the data folder get-shapefiles.py
+   
       - name: Run script
-        command: scripts/get-shapefiles.py
+        shell: scripts/get-shapefiles.py
+        args:
           chdir: src/openstreetmap-carto
-
-
+          
+      - name: Download Node.js setup script
+        shell: curl -sL https://deb.nodesource.com/setup | sudo bash -
+        args:
+            warn: no
+            
+      - name: install node.js
+        apt: name= nodejs state=present
+      
+      #install the latest version 0 of carto
+      - name: install lest verion 0 of carto
+        become: yes
+        shell: npm install -g carto@0
+        
+      #install mapnik-reference
+      - name: install mapnik
+        npm: 
+            name: mapnik-reference
+            state: latest
+            
+      - name: install mapnik
+        shell: node -e "console.log(require('mapnik-reference'))"
+        
+      - name: test and produce carto
+        shell: carto -a "3.0.20" project.mml > style.xml
+        
+      - name: test
+        shell: ls -l style.xml
+      
+      #Install PostgreSQL
+      - name: update
+        apt: 
+            update_cache: yes
+            
+      - name: installing postgresql
+        apt: name= {{item}} state= present
+        with_items:
+        - postgresql
+        - postgis
+        - pgadmin3
+        - postgresql-contrib
+        
+      # Set the password for the postgres user
+      - name: create a file
+        copy:
+            content: 'localhost:5432:*:postgres:postgres_007%'
+            dest: ~/.pgpass
+            mode: 600
+        
+      - name: trust
+        become: yes
+        lineinfile:
+            path:/etc/postgresql/10/main/pg_hba.conf
+            line: 's|peer|trust'
+            
+      - name: trust (2)
+        become: yes
+        lineinfile:
+            path: /etc/postgresql/10/main/pg_hba.conf
+            line: 's|md5|trust|'
+            
+      
+            
       - name: restart postgresql
-        service: name=postgresql state=restarted
+        service: 
+            name:postgresql 
+            state:restarted
       
       # ---------------- Moravy Part ----------------
       
