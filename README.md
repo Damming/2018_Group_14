@@ -75,8 +75,4 @@ For example your aws_access_key_id is 'aaaa' and your aws_secret_access_key is '
 > wget -c https://raw.githubusercontent.com/Damming/MapData/master/prepared_new_instance.yml | ansible-playbook prepared_new_instance.yml
 
 ### Test
-<<<<<<< HEAD
-http://autual_ip/ol.html
-=======
-Same as task one.
->>>>>>> 3d903c51668781784b50f58a458ab2a8814338c9
+http://autual_ip/ol.html  
