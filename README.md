@@ -72,7 +72,7 @@ For example your aws_access_key_id is 'aaaa' and your aws_secret_access_key is '
 #### Run playbook
 * IMPORTANT - If you did not create instance in us-west-2, then you need to change the value of image (line 33) and reigon (line 35) before run the script. A feasible way is to edit the file directly in Github page and then click raw, use the address replace the address below.
 
-> curl https://raw.githubusercontent.com/Damming/MapData/master/prepared_new_instance.yml | ansible-playbook prepared_new_instance.yml
+> wget -c https://raw.githubusercontent.com/Damming/MapData/master/prepared_new_instance.yml | ansible-playbook prepared_new_instance.yml
 
 ### Test
 Same as task one.
