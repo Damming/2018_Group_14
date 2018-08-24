@@ -338,77 +338,73 @@
 
       # Install the fonts needed by openstreetmap-carto
       - copy:
-          src: ~/src/noto-emoji/fonts/NotoColorEmoji.ttf
+          src: /home/ubuntu/src/noto-emoji/fonts/NotoColorEmoji.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-emoji/fonts/NotoEmoji-Regular.ttf
+          src: /home/ubuntu/src/noto-emoji/fonts/NotoEmoji-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoNaskhArabicUI-Regular.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoNaskhArabicUI-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoNaskhArabicUI-Bold.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoNaskhArabicUI-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansAdlam-Regular.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansAdlam-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansAdlamUnjoined-Regular.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansAdlamUnjoined-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansChakma-Regular.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansChakma-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansOsage-Regular.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansOsage-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansSinhalaUI-Regular.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansSinhalaUI-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansCherokee-Bold.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansCherokee-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansSinhalaUI-Bold.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansSinhalaUI-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansSymbols-Bold.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansSymbols-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
+          src: /home/ubuntu/src/noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
       - copy:
-          src: ~/src/noto-fonts/unhinted/NotoSansSymbols2-Regular.ttf
+          src: /home/ubuntu/src/noto-fonts/unhinted/NotoSansSymbols2-Regular.ttf
           dest: /usr/share/fonts/truetype/noto
         become: yes
-
-      - name: fc-cache
-        become: yes
-        shell: fc-cache -fv
 
       - name: Install fontconfig
         become: yes
@@ -431,18 +427,16 @@
           dest: /home/ubuntu/src/OldUnifont
       
       - name: unzipping file
-        unarchive:
-          src: /home/ubuntu/src/OldUnifont/unifont_5.1.20080914.orig.tar.gz
-          dest: /home/ubuntu/src/OldUnifont/unifont-5.1.20080914/font/precompiled/unifont.ttf
+        shell: tar xvfz unifont_5.1.20080914.orig.tar.gz unifont-5.1.20080914/font/precompiled/unifont.ttf
+        args:
+          chdir: /home/ubuntu/src/OldUnifont
+          warn: no
             
       - name: copying file
+        become: yes
         copy:
           src: /home/ubuntu/src/OldUnifont/unifont-5.1.20080914/font/precompiled/unifont.ttf
           dest: /usr/share/fonts/truetype/unifont/OldUnifont.ttf
-      
-      - name: fc-cache
-        become: yes
-        shell: fc-cache -fv
 
       # Create the data folder get-shapefiles.pys
       - name: Run script
@@ -456,6 +450,7 @@
           warn: no
             
       - name: install node.js
+        become: yes
         apt: 
           name: npm
           state: latest
@@ -467,28 +462,29 @@
         
       # Install mapnik-reference
       - name: install mapnik
-        npm: 
-          name: mapnik-reference
-          state: latest
+        shell: npm install mapnik-reference
+        args:
+          chdir: /home/ubuntu/src/openstreetmap-carto
             
       - name: install mapnik
         shell: node -e "console.log(require('mapnik-reference'))"
+        args:
+          chdir: /home/ubuntu/src/openstreetmap-carto
         
       - name: test and produce carto
-        shell: carto -a "3.0.20" project.mml > /home/ubuntu/src/openstreetmap-carto/style.xml
+        shell: carto -a "3.0.20" project.mml > style.xml
+        args:
+          chdir: /home/ubuntu/src/openstreetmap-carto
         
       - name: test
-        shell: ls -l style.xml
+        shell: ls -l /home/ubuntu/src/openstreetmap-carto/style.xml
       
-      # Install PostgreSQL
-      - name: update
-        apt: 
-          update_cache: yes
-            
-      - name: installing postgresql
+      - name: Install PostgreSQL
+        become: yes
         apt: 
           name: "{{ item }}"
-          state: present
+          state: latest
+          update_cache: yes
         with_items:
           - postgresql
           - postgis
@@ -499,18 +495,23 @@
       - name: create a file
         copy:
           content: 'localhost:5432:*:postgres:postgres_007%'
-          dest: ~/.pgpass
-          mode: 600
+          dest: /home/ubuntu/.pgpass
+          mode: 0600
         
       - name: trust
         become: yes
         shell: sed -i 's|peer|trust|' /etc/postgresql/10/main/pg_hba.conf
+        args:
+          warn: no
             
       - name: trust (2)
         become: yes
-        shell: sudo sed -i 's|md5|trust|' /etc/postgresql/10/main/pg_hba.conf
+        shell: sed -i 's|md5|trust|' /etc/postgresql/10/main/pg_hba.conf
+        args:
+          warn: no
             
       - name: restart postgresql
+        become: yes
         service: 
           name: postgresql 
           state: restarted
@@ -539,11 +540,9 @@
           - postgis
 
       - name: Add a user and grant access to gis DB
-        # sudo_user: postgres
         postgresql_user:
           db: "{{ db_name }}"
           name: ubuntu
-          # password: postres_007%
           priv: ALL
        
       - name: Enabling remote access to PostgreSQL (1)
@@ -596,12 +595,9 @@
           name: osm2pgsql
           state: latest
           update_cache: yes
-
-      # - name: cd to openstreetmap-carto
-      #   shell: cd ~/src/openstreetmap-carto
       
       - name: Get an OpenStreetMap data extract
-        get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/Auckland.osm.pbf dest=~/src/openstreetmap-carto
+        get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/Auckland.osm.pbf dest=/home/ubuntu/src/openstreetmap-carto
        
       # Load data to postgis
       - name: Load data to postgis(1)
@@ -613,7 +609,7 @@
       - name: Load data to postgis(2)
         shell: osm2pgsql -s -C 300 -c -G --hstore --style openstreetmap-carto.style --tag-transform-script openstreetmap-carto.lua -d gis -H localhost -U postgres Auckland.osm.pbf
         args:
-          chdir: ~/src/openstreetmap-carto
+          chdir: /home/ubuntu/src/openstreetmap-carto
       
       # Create indexes and grant users
       - name: indexes and grantuser
@@ -622,18 +618,18 @@
       - name: indexes
         shell: scripts/indexes.py | psql -U postgres -h localhost -d gis
         args:
-          chdir: ~/src/openstreetmap-carto
+          chdir: /home/ubuntu/src/openstreetmap-carto
        
       - name: grantuser(3)
-        get_url: url=https://raw.githubusercontent.com/openstreetmap/osm2pgsql/master/install-postgis-osm-user.sh dest=~/src/openstreetmap-carto
+        get_url: url=https://raw.githubusercontent.com/openstreetmap/osm2pgsql/master/install-postgis-osm-user.sh dest=/home/ubuntu/src/openstreetmap-carto
         
       - name: grantuser(4)
-        file:  dest=~/src/openstreetmap-carto/install-postgis-osm-user.sh mode=a+x
+        file:  dest=/home/ubuntu/src/openstreetmap-carto/install-postgis-osm-user.sh mode=a+x
        
       - name: grantuser(5)
         shell: ./install-postgis-osm-user.sh gis ubuntu
         args:
-          chdir: ~/src/openstreetmap-carto
+          chdir: /home/ubuntu/src/openstreetmap-carto
          
       # ---------------- Simon Part ----------------  
 
@@ -700,7 +696,7 @@
       - name: install renderd(1)
         become: yes
         copy:
-          src: ~/src/mod_tile/debian/renderd.init
+          src: /home/ubuntu/src/mod_tile/debian/renderd.init
           dest: /etc/init.d/renderd
           mode: a+x
 
@@ -764,18 +760,33 @@
         shell: ln -s /etc/apache2/mods-available/mod_tile.load /etc/apache2/mods-enabled/ warn=False
       
       # Edit The default virtual host file
-      - name: add more lines
+      # - name: add more lines
+      #   become: yes
+      #   lineinfile:
+      #     dest: /etc/apache2/sites-enabled/000-default.conf
+      #     insertafter: '<VirtualHost *:80>'
+      #     state: present
+      #     line: "{{ item }}"
+      #   with_items:
+      #     - '        LoadTileConfigFile /usr/local/etc/renderd.conf'
+      #     - '        ModTileRenderdSocketName /var/run/renderd/renderd.sock'
+      #     - '        ModTileRequestTimeout 3'
+      #     - '        ModTileMissingRequestTimeout 60'
+      - name: Edit host file(1)
         become: yes
-        lineinfile:
-          dest: /etc/apache2/sites-enabled/000-default.conf
-          insertafter: <VirtualHost *:80>
-          state: present
-          line: "{{ item }}"
-        with_items:
-          - '        LoadTileConfigFile /usr/local/etc/renderd.conf'
-          - '        ModTileRenderdSocketName /var/run/renderd/renderd.sock'
-          - '        ModTileRequestTimeout 3'
-          - '        ModTileMissingRequestTimeout 60'
+        shell: sed -i "2i\        LoadTileConfigFile /usr/local/etc/renderd.conf" /etc/apache2/sites-enabled/000-default.conf
+      
+      - name: Edit host file(2)
+        become: yes
+        shell: sed -i '3i\        ModTileRenderdSocketName /var/run/renderd/renderd.sock' /etc/apache2/sites-enabled/000-default.conf
+      
+      - name: Edit host file(3)
+        become: yes
+        shell: sed -i '4i\        ModTileRequestTimeout 3' /etc/apache2/sites-enabled/000-default.conf
+      
+      - name: Edit host file(4)
+        become: yes
+        shell: sed -i '5i\        ModTileMissingRequestTimeout 60' /etc/apache2/sites-enabled/000-default.conf
         
       # - name: restart apache2
       #   script: systemctl restart apache2
