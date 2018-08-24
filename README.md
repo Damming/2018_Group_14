@@ -57,10 +57,13 @@ Staging environments allow us to ensure there are no conflicts before making cha
 
 ### Usage
 #### Install ansible
-* If you are going to rerun the playbook, please delete the created keypair in AWS console.  
+* If you are going to rerun the playbook, please delete the created keypair in AWS console.   
+
 Run prepared_localhost.sh. This Shell Script will install Ansible and Boto in the current system. Then, a Ansible playbook used to create a new AWS KeyPair will be created. The new KeyPair is ~/.ssh/keypairForAnsible.yem.  
-Parameters are aws_access_key_id, aws_secret_access_key, region.  
-Please have a look at the 'IMPORTANT' below first!  
+Parameters are aws_access_key_id, aws_secret_access_key, region.   
+
+* Please have a look at the 'IMPORTANT' below first!   
+
 > bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/prepared_localhost.sh) aws_access_key_id aws_secret_access_key region  
 
 For example your aws_access_key_id is 'aaaa' and your aws_secret_access_key is 'bbbb' and you want to create the new instance in us-west-2, then run:  
