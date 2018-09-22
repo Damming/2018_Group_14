@@ -6,12 +6,12 @@ sudo apt-get -y install nginx
 sudo vi /etc/nginx/nginx.conf
 
 # ----------------------------------------
-# put the following lines in http section
+# put the following lines in the http section of nginx.conf
 
 upstream mysite {
-    server 54.186.216.105:8081;
-    server 54.186.216.105:8082;
-    server 54.186.216.105:8083 backup;
+    server %actual_ip%:80;
+    server %actual_ip%:80;
+    server %actual_ip%:80 backup;
 }
 
 server {
