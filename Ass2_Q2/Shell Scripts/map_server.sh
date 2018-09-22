@@ -1,5 +1,3 @@
-# ---------------- 2 -----------------
-
 # Update Ubuntu & Install essential tools
 sudo apt-get update
 # sudo apt-get -y upgrade
@@ -124,27 +122,6 @@ ls -l style.xml
 cd ~/
 echo '%actual_ip%:5432:*:postgres:postgres_007%'>.pgpass
 chmod 600 .pgpass
-
-# # Install Osm2pgsql
-# sudo add-apt-repository -y ppa:osmadmins/ppa
-# apt-key adv --keyserver keyserver.ubuntu.com --recv A438A16C88C6BE41CB1616B8D57F48750AC4F2CB
-# sudo apt-get update
-# sudo apt-get install -y osm2pgsql
-
-# # Get an OpenStreetMap data extract
-# cd ~/src/openstreetmap-carto
-# wget -c https://raw.githubusercontent.com/Damming/MapData/master/Auckland.osm.pbf
-
-# # Load data to PostGIS
-# sudo sysctl -w vm.overcommit_memory=1
-# HOSTNAME=%actual_ip%
-# osm2pgsql -s -C 300 -c -G --hstore --style openstreetmap-carto.style --tag-transform-script openstreetmap-carto.lua -d gis -H $HOSTNAME -U postgres Auckland.osm.pbf
-
-# # Create indexes and grant users
-# HOSTNAME=%actual_ip%
-# scripts/indexes.py | psql -U postgres -h $HOSTNAME -d gis
-
-# ---------------- 4 -----------------
 
 # Configure renderd
 sudo sed -i "2i\socketname=/var/run/renderd/renderd.sock" /usr/local/etc/renderd.conf
