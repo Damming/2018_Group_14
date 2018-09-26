@@ -528,3 +528,314 @@
               packages:
                 - apache2 
                 - apache2-dev
+                
+            # Install the fonts needed by openstreetmap-carto
+          - name: Install font tools
+            become: yes
+            apt: 
+              name: "{{ packages }}"
+              state: latest
+            vars:
+              packages:
+                - fonts-noto-cjk 
+                - fonts-noto-hinted 
+                - fonts-noto-unhinted 
+                - fonts-hanazono 
+                - ttf-unifont
+
+          - name: git noto emoji
+            git:
+              dest: /home/ubuntu/src/noto-emoji
+              clone: yes
+              repo: 'https://github.com/googlei18n/noto-emoji.git'
+
+          - name: git noto font
+            git:
+              dest: /home/ubuntu/src/noto-fonts
+              clone: yes
+              repo: 'https://github.com/googlei18n/noto-fonts.git'
+
+          # Install the fonts needed by openstreetmap-carto
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-emoji/fonts/NotoColorEmoji.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-emoji/fonts/NotoEmoji-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoNaskhArabicUI-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoNaskhArabicUI-Bold.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansAdlam-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansAdlamUnjoined-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansChakma-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansOsage-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansSinhalaUI-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansArabicUI-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansCherokee-Bold.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansSinhalaUI-Bold.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansSymbols-Bold.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/hinted/NotoSansArabicUI-Bold.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+          - copy:
+              remote_src: yes
+              src: /home/ubuntu/src/noto-fonts/unhinted/NotoSansSymbols2-Regular.ttf
+              dest: /usr/share/fonts/truetype/noto
+            become: yes
+
+          - name: Install fontconfig
+            become: yes
+            apt:
+              name: fontconfig
+              state: latest
+
+          - name: fc-list
+            shell: fc-list
+            
+          # Install old unifont Medium font (just removes the warning)
+          - name: make directory
+            file: 
+              path: /home/ubuntu/src/OldUnifont 
+              state: directory
+
+          - name: get debian
+            get_url: 
+              url: http://http.debian.net/debian/pool/main/u/unifont/unifont_5.1.20080914.orig.tar.gz
+              dest: /home/ubuntu/src/OldUnifont
+
+          - name: unzipping file
+            shell: tar xvfz unifont_5.1.20080914.orig.tar.gz unifont-5.1.20080914/font/precompiled/unifont.ttf
+            args:
+              chdir: /home/ubuntu/src/OldUnifont
+              warn: no
+
+          - name: copying file
+            become: yes
+            copy:
+              remote_src: yes
+              src: /home/ubuntu/src/OldUnifont/unifont-5.1.20080914/font/precompiled/unifont.ttf
+              dest: /usr/share/fonts/truetype/unifont/OldUnifont.ttf
+              
+            # Configure renderd
+          - name: Configure rendered(1) socketname
+            become: yes
+            ini_file:
+              path: /usr/local/etc/renderd.conf
+              section: renderd
+              option: socketname
+              value: /var/run/renderd/renderd.sock
+
+          - name: Configure rendered(2) plugins_dir
+            become: yes
+            ini_file:
+              path: /usr/local/etc/renderd.conf
+              section: mapnik
+              option: plugins_dir
+              value: /usr/lib/mapnik/3.0/input/
+
+          - name: Configure rendered(3) font_dir
+            become: yes
+            ini_file:
+              path: /usr/local/etc/renderd.conf
+              section: mapnik
+              option: font_dir
+              value: /usr/share/fonts
+
+          - name: Configure rendered(4) font_dir_recurse
+            become: yes
+            ini_file:
+              path: /usr/local/etc/renderd.conf
+              section: mapnik
+              option: font_dir_recurse
+              value: true
+
+          - name: Configure rendered(5) URI
+            become: yes
+            ini_file:
+              path: /usr/local/etc/renderd.conf
+              section: default
+              option: URI
+              value: /osm_tiles/
+
+          - name: Configure rendered(6) XML
+            become: yes
+            ini_file:
+              path: /usr/local/etc/renderd.conf
+              section: default
+              option: XML
+              value: /home/ubuntu/src/openstreetmap-carto/style.xml
+
+          - name: Configure rendered(7) HOST
+            become: yes
+            ini_file:
+              path: /usr/local/etc/renderd.conf
+              section: default
+              option: HOST
+              value: %actual_ip%
+            
+            # # Install renderd init script by copying the sample init script included in its package
+          - name: install renderd(1)
+            become: yes
+            copy:
+              remote_src: yes
+              src: /home/ubuntu/src/mod_tile/debian/renderd.init
+              dest: /etc/init.d/renderd
+              mode: a+x
+              
+             # Edit the init script file
+          - name: Edit script(1)
+            become: yes
+            shell: sed -i -e '/DAEMON=/ s~=.*~= /usr/local/bin/$NAME~' /etc/init.d/renderd warn=False
+
+          - name: Edit script(2)
+            become: yes
+            shell: sed -i -e '/DAEMON_ARGS=/ s~=.*~= "-c /usr/local/etc/renderd.conf"~' /etc/init.d/renderd warn=False
+
+          - name: Edit script(3)
+            become: yes
+            shell: sed -i -e '/RUNASUSER=/ s~=.*~=ubuntu~' /etc/init.d/renderd warn=False
+           
+           
+            # Create directories for renderd and mod_tile
+          - name: creates directory for renderd
+            become: yes
+            file:
+              path: /var/run/renderd
+              state: directory
+              owner: ubuntu
+
+          - name: creates directory for mod_tile
+            become: yes
+            file: 
+              path: /var/lib/mod_tile
+              state: directory
+              owner: ubuntu
+
+          - name: daemon reload
+            become: yes
+            shell: systemctl daemon-reload
+
+          - name: start renderd
+            become: yes
+            shell: systemctl start renderd
+
+          - name: enable renderd
+            become: yes
+            shell: systemctl enable renderd
+
+
+          # Configure Apache
+          - name: create file and write into item
+            become: yes
+            file: 
+              path: /etc/apache2/mods-available/mod_tile.load
+              state: touch
+
+          - name: write into file
+            become: yes
+            lineinfile:
+              path: /etc/apache2/mods-available/mod_tile.load
+              line: LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so
+
+            # Edit the default virtual host file
+          - name: symlink
+            become: yes
+            shell: ln -s /etc/apache2/mods-available/mod_tile.load /etc/apache2/mods-enabled/ warn=False
+
+          - name: Edit host file(1)
+            become: yes
+            shell: sed -i "2i\        LoadTileConfigFile /usr/local/etc/renderd.conf" /etc/apache2/sites-enabled/000-default.conf
+
+          - name: Edit host file(2)
+            become: yes
+            shell: sed -i '3i\        ModTileRenderdSocketName /var/run/renderd/renderd.sock' /etc/apache2/sites-enabled/000-default.conf
+
+          - name: Edit host file(3)
+            become: yes
+            shell: sed -i '4i\        ModTileRequestTimeout 3' /etc/apache2/sites-enabled/000-default.conf
+
+          - name: Edit host file(4)
+            become: yes
+            shell: sed -i '5i\        ModTileMissingRequestTimeout 60' /etc/apache2/sites-enabled/000-default.conf
+
+          # - name: restart apache2
+          #   script: systemctl restart apache2
+          #   tags:
+          #     name: Openstreetmap
+
+          - name: restart apache2
+            service:
+              name: apache2
+              state: restarted
+
+          - name: OpenLayers
+            become: yes
+            get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/ol.html dest=/var/www/html/
+
+          - name: Leaflet
+            become: yes
+            get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/lf.html dest=/var/www/html/
+
+          - name: Start renderd
+            service:
+              name: renderd
+              state: started
