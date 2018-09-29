@@ -81,7 +81,7 @@ http://autual_ip/ol.html
 
 ### Decrisption
 
-In this task, six AWS instances are required. They are 1 assistant server, 1 database server, 3 OpenStreetMap program server(including 1 backup), and 1 nginx server. Only assistant server needs to be setup manually. The other servers can be setup by Ansible playbook running on the assistant server. Assistant server can also be used to update program server.
+In this task, six AWS instances are required. They are 1 assistant server, 1 database server, 3 OpenStreetMap program servers (including 1 backup), and 1 nginx server. Only assistant server needs to be setup manually. The other servers can be setup by Ansible playbook running on the assistant server. Assistant server can also be used to update program server.
 
 #### System required
 Ubuntu Server 18.04 LTS (HVM)  
@@ -99,22 +99,27 @@ The other server will be set by the playbook.
 
 #### Setup system
 Setup an assistant server, then run:
-> bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/prepared_localhost.sh) aws_access_key_id aws_secret_access_key region  
+> bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/ansible.sh) aws_access_key_id aws_secret_access_key region  
 
 The shell script you just ran has installed Ansible into assistant server. Next step is setup all the other servers. Run:
-> wget -c https://raw.githubusercontent.com/Damming/MapData/master/prepared_new_instance.yml | ansible-playbook prepared_new_instance.yml
+> wget -c https://raw.githubusercontent.com/Damming/MapData/master/Q2_playbook.yml | ansible-playbook Q2_playbook.yml
+
+This playbook will run quiet a while. The system will be ready for using after the playbook is running completely.
 
 #### Update
 If you want to update all the program servers in one time, run:
-> wget -c https://raw.githubusercontent.com/Damming/MapData/master/prepared_new_instance.yml | ansible-playbook prepared_new_instance.yml
+> wget -c https://raw.githubusercontent.com/Damming/MapData/master/update.yml | ansible-playbook update.yml
 
 If you want to update servers one at a time and see the changes, download the update playbook by:
-> 
+> wget -c https://raw.githubusercontent.com/Damming/MapData/master/update.yml
 
 Then comment the 26th line and decomment the 27th line. The '0' in the 27th line is used to control which server is going to be updated. The valid options are 0, 1, 2. Run the following command to execute the playbook:
-> 
+> ansible-playbook update.yml
 
 ### Test
+http://autual_ip_of_nginx_server/ol.html  
+If you only updated one program server. The old version and the new version will appear alternately.  
+The log of nginx can be found in /var/log/nginx/
 
 ## Assignment 2 - Task Two
 
