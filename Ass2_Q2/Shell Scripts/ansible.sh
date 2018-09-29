@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # ---------- install ansible & boto ----------
 # Upload Ubuntu source packages
 sudo apt-get update

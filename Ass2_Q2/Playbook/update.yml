@@ -23,7 +23,8 @@
 
 ---
   - name: setup openstreetmap program server
-    hosts: "{{ groups.map_server.0 }}"
+    hosts: map_server
+    # hosts: "{{ groups.map_server.0 }}"
     remote_user: ubuntu
     gather_facts: True
     become_user: root
