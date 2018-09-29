@@ -78,7 +78,7 @@
             - proto: tcp
               from_port: 5432
               to_port: 5432
-              cidr_ip: 127.0.0.1/32
+              cidr_ip: 0.0.0.0/0
 
             # SSH
             - proto: tcp
@@ -213,7 +213,7 @@
   # --------------------- database.sh(1) ---------------------
   # run on database server
 
-  - name: install openstreetmap
+  - name: setup database server
     hosts: database
     remote_user: ubuntu
     gather_facts: True
@@ -373,7 +373,7 @@
   # --------------------- assistant.sh ---------------------
   # run on assistant server (localhost)
 
-  - name: install openstreetmap
+  - name: setup assistant server
     hosts: local
     connection: local
     remote_user: ubuntu
@@ -385,7 +385,7 @@
       db_user: postgres
       db_name: gis
       db_password: postgres_007%
-      database_ip: groups.database.inventory_hostname
+      database_ip: "{{ groups.database.0 }}"
 
     tasks:
 
@@ -475,117 +475,64 @@
             - mapnik-utils 
             - python-mapnik
             
-      # Install Mod_tile from source
-      - name: Install necessary packages
-        become: yes
-        apt: 
-          name: "{{ packages }}"
-          state: latest
-        vars:
-          packages:
-            - autoconf 
-            - autogen 
-            - libmapnik3.0
+      # # Install Mod_tile from source
+      # - name: Install necessary packages
+      #   become: yes
+      #   apt: 
+      #     name: "{{ packages }}"
+      #     state: latest
+      #   vars:
+      #     packages:
+      #       - autoconf 
+      #       - autogen 
+      #       - libmapnik3.0
 
-      - name: make directory
-        file:
-          path: /home/ubuntu/src
-          state: directory
+      # - name: make directory
+      #   file:
+      #     path: /home/ubuntu/src
+      #     state: directory
           
-      - name: git clone
-        git:
-          repo: 'https://github.com/openstreetmap/mod_tile.git'
-          clone: yes
-          dest: /home/ubuntu/src/mod_tile
+      # - name: git clone
+      #   git:
+      #     repo: 'https://github.com/openstreetmap/mod_tile.git'
+      #     clone: yes
+      #     dest: /home/ubuntu/src/mod_tile
         
-      - name: autogen and config
-        shell: ./autogen.sh
-        args:
-          chdir: /home/ubuntu/src/mod_tile 
+      # - name: autogen and config
+      #   become: yes
+      #   shell: ./autogen.sh
+      #   args:
+      #     chdir: /home/ubuntu/src/mod_tile 
         
-      - name: Configure mod_tile.
-        shell: ./configure
-        args:
-          chdir: /home/ubuntu/src/mod_tile
+      # - name: Configure mod_tile.
+      #   become: yes
+      #   shell: ./configure
+      #   args:
+      #     chdir: /home/ubuntu/src/mod_tile
         
-      - name: make mod_tile
-        shell: make
-        args:
-          chdir: /home/ubuntu/src/mod_tile 
+      # - name: make mod_tile
+      #   become: yes
+      #   shell: make
+      #   args:
+      #     chdir: /home/ubuntu/src/mod_tile 
         
-      - name: make install
-        become: yes
-        shell: make install
-        args:
-          chdir: /home/ubuntu/src/mod_tile
+      # - name: make install
+      #   become: yes
+      #   shell: make install
+      #   args:
+      #     chdir: /home/ubuntu/src/mod_tile
         
-      - name: make install (2)
-        become: yes
-        shell: make install-mod_tile
-        args:
-          chdir: /home/ubuntu/src/mod_tile  
+      # - name: make install (2)
+      #   become: yes
+      #   shell: make install-mod_tile
+      #   args:
+      #     chdir: /home/ubuntu/src/mod_tile  
         
-      - name: make install (3)
-        become: yes
-        shell: ldconfig
-        args:
-          chdir: /home/ubuntu/src/mod_tile   
-
-      # Install Mod_tile from source
-      - name: Install necessary packages
-        become: yes
-        apt: 
-          name: "{{ packages }}"
-          state: latest
-        vars:
-          packages:
-            - autoconf 
-            - autogen 
-            - libmapnik3.0
-            
-      - name: make directory
-        file:
-          path: /home/ubuntu/src
-          state: directory
-          
-      - name: clone mode tile package
-        git:
-          repo: 'https://github.com/openstreetmap/mod_tile.git'
-          clone: yes
-          dest: /home/ubuntu/src/mod_tile
-        
-      - name: autogen and config
-        shell: ./autogen.sh
-        args:
-          chdir: /home/ubuntu/src/mod_tile 
-        
-      - name: Configure mod_tile.
-        shell: ./configure
-        args:
-          chdir: /home/ubuntu/src/mod_tile
-        
-      - name: make mod_tile
-        shell: make
-        args:
-          chdir: /home/ubuntu/src/mod_tile 
-        
-      - name: make install
-        become: yes
-        shell: make install
-        args:
-          chdir: /home/ubuntu/src/mod_tile
-        
-      - name: make install (2)
-        become: yes
-        shell: make install-mod_tile
-        args:
-          chdir: /home/ubuntu/src/mod_tile  
-        
-      - name: make install (3)
-        become: yes
-        shell: ldconfig
-        args:
-          chdir: /home/ubuntu/src/mod_tile  
+      # - name: make install (3)
+      #   become: yes
+      #   shell: ldconfig
+      #   args:
+      #     chdir: /home/ubuntu/src/mod_tile    
           
       # Install Yaml and Package Manager for Python
       - name: Install Yaml and Package Manager for Python & Mapnik Utilities
@@ -649,7 +596,7 @@
       # new line editing a file
       - name: editing
         become: yes
-        shell: sudo sed -i 's|<Datasource>|<Datasource><Parameter name="type">postgis</Parameter><Parameter name="host">{{ database_ip }}</Parameter><Parameter name="dbname">gis</Parameter><Parameter name="user">postgres</Parameter><Parameter name="password">postgres_007%</Parameter>|' ~/src/openstreetmap-carto/style.xml
+        shell: sed -i 's|<Datasource>|<Datasource><Parameter name="type">postgis</Parameter><Parameter name="host">{{ database_ip }}</Parameter><Parameter name="dbname">gis</Parameter><Parameter name="user">postgres</Parameter><Parameter name="password">postgres_007%</Parameter>|' /home/ubuntu/src/openstreetmap-carto/style.xml
           
       - name: test
         shell: ls -l /home/ubuntu/src/openstreetmap-carto/style.xml
@@ -692,20 +639,20 @@
           name: vm.overcommit_memory
           value: 1
       
-      - name: indexes and grantuser
-        shell: HOSTNAME={{ database_ip }}
+      # - name: indexes and grantuser
+      #   shell: HOSTNAME={{ database_ip }}
         
       - name: Load data to postgis(2)
-        shell: osm2pgsql -s -C 300 -c -G --hstore --style openstreetmap-carto.style --tag-transform-script openstreetmap-carto.lua -d gis -H localhost -U postgres Auckland.osm.pbf
+        shell: osm2pgsql -s -C 300 -c -G --hstore --style openstreetmap-carto.style --tag-transform-script openstreetmap-carto.lua -d gis -H {{ database_ip }} -U postgres Auckland.osm.pbf
         args:
           chdir: /home/ubuntu/src/openstreetmap-carto
       
       # Create indexes and grant users
-      - name: indexes and grantuser
-        shell: HOSTNAME={{ database_ip }}
+      # - name: indexes and grantuser
+      #   shell: HOSTNAME={{ database_ip }}
        
       - name: indexes
-        shell: scripts/indexes.py | psql -U postgres -h localhost -d gis
+        shell: scripts/indexes.py | psql -U postgres -h {{ database_ip }} -d gis
         args:
           chdir: /home/ubuntu/src/openstreetmap-carto
 
@@ -713,7 +660,7 @@
   # --------------------- database.sh(2) ---------------------
   # run on database server
       
-  - name: install openstreetmap
+  - name: continuing config database server
     hosts: database
     remote_user: ubuntu
     gather_facts: True
@@ -728,21 +675,21 @@
     tasks:
           
       - name: grantuser(3)
-        get_url: url=https://raw.githubusercontent.com/openstreetmap/osm2pgsql/master/install-postgis-osm-user.sh dest=/home/ubuntu/src/openstreetmap-carto
+        get_url: url=https://raw.githubusercontent.com/openstreetmap/osm2pgsql/master/install-postgis-osm-user.sh dest=/home/ubuntu
       
       - name: grantuser(4)
-        file:  dest=/home/ubuntu/src/openstreetmap-carto/install-postgis-osm-user.sh mode=a+x
+        file:  dest=/home/ubuntu/install-postgis-osm-user.sh mode=a+x
 
       - name: grantuser(5)
         shell: ./install-postgis-osm-user.sh gis ubuntu
         args:
-          chdir: /home/ubuntu/src/openstreetmap-carto
+          chdir: /home/ubuntu
            
            
   # --------------------- map_server.sh ---------------------
   # run on map program server
       
-  - name: install openstreetmap
+  - name: setup openstreetmap program server
     hosts: map_server
     remote_user: ubuntu
     gather_facts: True
@@ -753,7 +700,7 @@
       db_user: postgres
       db_name: gis
       db_password: postgres_007%
-      database_ip: groups.database.inventory_hostname
+      database_ip: "{{ groups.database.0 }}"
 
     tasks:
 
@@ -767,6 +714,72 @@
           packages:
             - python-psycopg2
             - python3-psycopg2
+
+      # Set the en_GB locale
+      - name: generate language
+        become: yes
+        shell: locale-gen en_GB en_GB.UTF-8
+
+      - name: set LANG
+        become: yes
+        shell: update-locale LANG='en_GB.UTF-8'
+
+      - name: set LANGUAGE
+        become: yes
+        shell: update-locale LANGUAGE='en_GB.UTF-8'
+
+      - name: set LC_ALL
+        become: yes
+        shell: update-locale LC_ALL='en_GB.UTF-8'
+
+      - name: reload locale
+        shell: . /etc/default/locale
+
+      - name: Install git
+        become: yes
+        apt:
+          name: git
+          state: latest
+
+      # Update Freetype6
+      - name: add repository
+        become: true
+        apt_repository: 
+          repo: ppa:no1wantdthisname/ppa
+          state: present
+
+      - name: Install libfreetype6 & libfreetype6-dev
+        become: yes
+        apt: 
+          name: "{{ packages }}"
+          state: latest
+          update_cache: yes
+        vars:
+          packages:
+            - libfreetype6
+            - libfreetype6-dev
+
+      - name: Install Mapnik from the standard Ubuntu repository
+        become: yes
+        apt: 
+          name: "{{ packages }}"
+          state: latest
+        vars:
+          packages:
+            - git
+            - autoconf
+            - libtool
+            - libxml2-dev
+            - libbz2-dev
+            - libgeos-dev
+            - libgeos++-dev
+            - libproj-dev 
+            - gdal-bin 
+            - libgdal-dev 
+            - g++
+            - libmapnik-dev 
+            - mapnik-utils 
+            - python-mapnik
         
       # Install apache http server
       - name: Install Apache HTTP Server
@@ -778,6 +791,84 @@
           packages:
             - apache2 
             - apache2-dev
+
+      # Install Mod_tile from source
+      - name: Install necessary packages
+        become: yes
+        apt: 
+          name: "{{ packages }}"
+          state: latest
+        vars:
+          packages:
+            - autoconf 
+            - autogen 
+            - libmapnik3.0
+            
+      - name: make directory
+        file:
+          path: /home/ubuntu/src
+          state: directory
+          
+      - name: clone mode tile package
+        git:
+          repo: 'https://github.com/openstreetmap/mod_tile.git'
+          clone: yes
+          dest: /home/ubuntu/src/mod_tile
+        
+      - name: autogen and config
+        become: yes
+        shell: ./autogen.sh
+        args:
+          chdir: /home/ubuntu/src/mod_tile 
+        
+      - name: Configure mod_tile.
+        become: yes
+        shell: ./configure
+        args:
+          chdir: /home/ubuntu/src/mod_tile
+        
+      - name: make mod_tile
+        become: yes
+        shell: make
+        args:
+          chdir: /home/ubuntu/src/mod_tile 
+        
+      - name: make install
+        become: yes
+        shell: make install
+        args:
+          chdir: /home/ubuntu/src/mod_tile
+        
+      - name: make install (2)
+        become: yes
+        shell: make install-mod_tile
+        args:
+          chdir: /home/ubuntu/src/mod_tile  
+        
+      - name: make install (3)
+        become: yes
+        shell: ldconfig
+        args:
+          chdir: /home/ubuntu/src/mod_tile 
+
+      # Install Yaml and Package Manager for Python
+      - name: Install Yaml and Package Manager for Python & Mapnik Utilities
+        become: yes
+        apt: 
+          name: "{{ packages }}"
+          state: latest
+        vars:
+          packages:
+            - python-yaml
+            - python-pip
+            - mapnik-utils
+            
+      # Install opensstreetmap-carto
+      - name: Install openstreetmap-carto
+        git:
+          repo: 'https://github.com/gravitystorm/openstreetmap-carto.git'
+          clone: yes
+          dest: /home/ubuntu/src/openstreetmap-carto
             
       # Install the fonts needed by openstreetmap-carto
       - name: Install font tools
@@ -968,7 +1059,7 @@
       # new line editing a file
       - name: editing
         become: yes
-        shell: sudo sed -i 's|<Datasource>|<Datasource><Parameter name="type">postgis</Parameter><Parameter name="host">{{ database_ip }}</Parameter><Parameter name="dbname">gis</Parameter><Parameter name="user">postgres</Parameter><Parameter name="password">postgres_007%</Parameter>|' ~/src/openstreetmap-carto/style.xml
+        shell: sudo sed -i 's|<Datasource>|<Datasource><Parameter name="type">postgis</Parameter><Parameter name="host">{{ database_ip }}</Parameter><Parameter name="dbname">gis</Parameter><Parameter name="user">postgres</Parameter><Parameter name="password">postgres_007%</Parameter>|' /home/ubuntu/src/openstreetmap-carto/style.xml
           
       - name: test
         shell: ls -l /home/ubuntu/src/openstreetmap-carto/style.xml
@@ -1132,7 +1223,7 @@
 
       - name: OpenLayers
         become: yes
-        get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/ol.html dest=/var/www/html/
+        get_url: url=https://raw.githubusercontent.com/Damming/MapData/master/ol_old/ol.html dest=/var/www/html/
 
       - name: Leaflet
         become: yes
@@ -1147,8 +1238,8 @@
 # --------------------- conf_ninx.sh ---------------------
 # run on nginx server
 
-  - name: install openstreetmap
-    hosts: webserver
+  - name: setup nginx server
+    hosts: nginx
     remote_user: ubuntu
     gather_facts: True
     become_user: root
@@ -1158,9 +1249,10 @@
       db_user: postgres
       db_name: gis
       db_password: postgres_007%
-      server_ip_1: groups.map_server.inventory_hostname.0
-      server_ip_2: groups.map_server.inventory_hostname.1
-      server_ip_3: groups.map_server.inventory_hostname.2
+      server_ip_1: "{{ groups.map_server.0 }}"
+      server_ip_2: "{{ groups.map_server.1 }}"
+      server_ip_3: "{{ groups.map_server.2 }}"
+      nginx_ip: "{{ groups.nginx.0 }}"
 
     tasks:
 
@@ -1176,10 +1268,10 @@
             - python3-psycopg2
 
       # install nginx
-      - name: Install ngix
+      - name: Install nginx
         become: yes
         apt:
-          name: ngix
+          name: nginx
           update_cache: yes
           state: latest
           
@@ -1191,14 +1283,14 @@
           insertafter: "http {"
           content: |
             upstream mysite {
-                server {{ server_ip_1 }}:80;
-                server {{ server_ip_2 }}:80;
+                server {{ server_ip_1 }}:80 weight=1;
+                server {{ server_ip_2 }}:80 weight=1;
                 server {{ server_ip_3 }}:80 backup;
             }
 
             server {
                 listen 80;
-                server_name nginx_ip;
+                server_name {{ nginx_ip }};
                 location / {
                     root html;
                     index index.html;
@@ -1209,4 +1301,4 @@
       # reload nginx
       - name : reload nginx
         path: /usr/sbin/
-        service:  name=nginx state=reload
+        service:  name=nginx state=reloaded

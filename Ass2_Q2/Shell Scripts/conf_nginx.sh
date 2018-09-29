@@ -9,8 +9,8 @@ sudo vi /etc/nginx/nginx.conf
 # put the following lines in the http section of nginx.conf
 
 upstream mysite {
-    server %actual_ip%:80;
-    server %actual_ip%:80;
+    server %actual_ip%:80 weight=1;
+    server %actual_ip%:80 weight=1;
     server %actual_ip%:80 backup;
 }
 
