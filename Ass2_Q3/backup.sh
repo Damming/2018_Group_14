@@ -21,9 +21,19 @@ sudo sed -i 's|md5|trust|' /etc/postgresql/10/main/pg_hba.conf
 sudo service postgresql restart
 
 # ------------------ backup -------------------
+# Manually backup 
 mkdir backup
-pg_dump -F c -f ~/backup/gis_backup.dmp  -C -E  UTF8 -h %actual_ip% -p 5432 -U postgres gis
+pg_dump -F c -f /home/ubuntu/backup/gis_backup.dmp  -C -E  UTF8 -h %actual_ip% -p 5432 -U postgres gis
 
+# Automatically backup
+# create a file in ~/ called auto_back.sh, put the following lines in it
+#
+# #! /bin/bash
+# pg_dump -F c -f /home/ubuntu/backup/gis_backup.dmp  -C -E  UTF8 -h %actual_ip% -p 5432 -U postgres gis
+# echo "backup finished" >> /home/ubuntu/backup_log
+#
+# to automate it, put the following line in /etc/crontab before '#' (backup every 15 minutes)
+# */5 * * * * ubuntu bash /home/ubuntu/auto_back.sh
 
 # ------------------ restore -------------------
 # Create the PostGIS Instance

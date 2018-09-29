@@ -28,8 +28,10 @@ region = $3" > ~/.aws/config
 
 # Create hosts file
 echo -e "[local]
-localhost \n
-[webserver]" > ~/hosts
+localhost\n
+[database]\n
+[map_server]\n
+[nginx]" > ~/hosts
 
 # Create playbook config file
 cd ~

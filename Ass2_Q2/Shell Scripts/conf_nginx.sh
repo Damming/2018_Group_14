@@ -16,7 +16,7 @@ upstream mysite {
 
 server {
     listen 80;
-    server_name nginx_ip;
+    server_name %nginx_ip%;
     location / {
         root html;
         index index.html;
