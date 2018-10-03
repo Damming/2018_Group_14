@@ -123,6 +123,21 @@ The log of nginx can be found in /var/log/nginx/
 
 ## Assignment 2 - Task Two
 
+### Decrisption
+Backup and restore the database.
+
 ### Usage
+Setup a blank backup server, then run:
+> bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/backup.sh) actual_database_ip  
+
+Now, the backup server will backup the database every 15 minutes. You can modify the last line of /etc/crontab to change the backup rate.  
+
+Then, delete the database server instance and run the following command on backup server:
+> bash <(curl -s https://raw.githubusercontent.com/Damming/MapData/master/restore.sh) retore_database_ip  
+We highly recommand you just use localhost as the place to restore the database, otherwise you need to set up a blank database server first, which is a bit complex.  
+
+Last, reconfigure the map program servers, run this on assistant server:
+> wget -c https://raw.githubusercontent.com/Damming/MapData/master/change_database.yml | ansible-playbook change_database.yml
 
 ### Test
+http://autual_ip_of_nginx_server/ol.html  
