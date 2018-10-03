@@ -138,8 +138,10 @@ We highly recommand you just use localhost as the place to restore the database,
 
 Last, reconfigure the map program servers, download configure playbook:  
 > wget -c https://raw.githubusercontent.com/Damming/MapData/master/change_database.yml  
+
 Modify database ip in line 35, then run:  
-> ansible-playbook change_database.yml
+
+> ansible-playbook change_database.yml  
 
 ### Test
 http://autual_ip_of_nginx_server/ol.html  
