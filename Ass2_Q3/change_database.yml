@@ -5,7 +5,7 @@
 #          Yaozu zhang   (Massey ID: 15398302, Email: 1264453650@qq.com, @shadoade github.com)
 #          Simon Freeman (Massey ID: 13036748, Email: freeman.simon@rocketmail.com, @Simon3man github.com)
 #
-# Create time: 3/Oct./2018
+# Create time: 4/Oct./2018
 #
 # Homepage: https://github.com/Damming/2018_Group_14
 # License: https://raw.githubusercontent.com/Damming/2018_Group_14/master/License.txt?token=AZvMHA8ak_65kW9KyjSlAd5-8o7vGDw_ks5bg8pGwA%3D%3D
@@ -32,7 +32,8 @@
       db_user: postgres
       db_name: gis
       db_password: postgres_007%
-      database_ip: %actual_ip%
+      database_ip: %actual_ip% 
+      #Need to change the actual IP of the new database server.
 
     tasks:
 
